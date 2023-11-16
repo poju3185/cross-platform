@@ -61,6 +61,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
         toast({
           title: `${action} post failed. Please try again.`,
         });
+        return
       }
       return navigate(`/posts/${post.$id}`);
     }
@@ -75,6 +76,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
       toast({
         title: `${action} post failed. Please try again.`,
       });
+      return;
     }
     navigate("/");
   };
@@ -106,7 +108,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           name="file"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="shad-form_label">Add Photos</FormLabel>
+              <FormLabel className="shad-form_label">Add Images</FormLabel>
               <FormControl>
                 <FileUploader
                   fieldChange={field.onChange}
@@ -142,7 +144,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
               </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Art, Expression, Learn"
+                  placeholder="Literature, Manga, Illustration"
                   type="text"
                   className="shad-input"
                   {...field}
@@ -156,7 +158,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
         <div className="flex gap-4 items-center justify-end">
           <Button
             type="button"
-            className="shad-button_dark_4"
+            className="shad-button_slate_400 dark:shad-button_dark_4"
             onClick={() => navigate(-1)}>
             Cancel
           </Button>

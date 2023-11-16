@@ -24,7 +24,7 @@ const Bottombar = () => {
               className={`${isActive && "invert-white"}`}
             />
 
-            <p className="tiny-medium text-light-2">{link.label}</p>
+            <p className="tiny-medium dark:text-light-2">{link.label}</p>
           </Link>
         );
       })}
