@@ -11,7 +11,10 @@ export type SearchResultProps = {
   searchedPosts: any;
 };
 
-const SearchResults = ({ isSearchFetching, searchedPosts }: SearchResultProps) => {
+const SearchResults = ({
+  isSearchFetching,
+  searchedPosts,
+}: SearchResultProps) => {
   if (isSearchFetching) {
     return <Loader />;
   } else if (searchedPosts && searchedPosts.documents.length > 0) {
@@ -29,14 +32,15 @@ const Explore = () => {
 
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearch = useDebounce(searchValue, 500);
-  const { data: searchedPosts, isFetching: isSearchFetching } = useSearchPosts(debouncedSearch);
+  const { data: searchedPosts, isFetching: isSearchFetching } =
+    useSearchPosts(debouncedSearch);
 
   useEffect(() => {
     if (inView && !searchValue) {
       fetchNextPage();
     }
-  }, [inView, searchValue]);
-
+  }, [inView]);
+  console.log(posts);
   if (!posts)
     return (
       <div className="flex-center w-full h-full">
@@ -45,8 +49,9 @@ const Explore = () => {
     );
 
   const shouldShowSearchResults = searchValue !== "";
-  const shouldShowPosts = !shouldShowSearchResults && 
-    posts.pages.every((item) => item.documents.length === 0);
+  const shouldShowPosts =
+    !shouldShowSearchResults &&
+    !posts.pages.every((item) => item.documents.length !== 0);
 
   return (
     <div className="explore-container">
@@ -92,12 +97,13 @@ const Explore = () => {
             isSearchFetching={isSearchFetching}
             searchedPosts={searchedPosts}
           />
-        ) : shouldShowPosts ? (
-          <p className="text-light-4 mt-10 text-center w-full">End of posts</p>
         ) : (
           posts.pages.map((item, index) => (
             <GridPostList key={`page-${index}`} posts={item.documents} />
           ))
+        )}
+        {shouldShowPosts && (
+          <p className="text-light-4 mt-2 text-center w-full">End of posts</p>
         )}
       </div>
 

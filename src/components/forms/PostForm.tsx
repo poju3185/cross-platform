@@ -55,13 +55,23 @@ const PostForm = ({ post, action }: PostFormProps) => {
         postId: post.$id,
         imageId: post.imageId,
         imageUrl: post.imageUrl,
+        search_term:
+          value.caption +
+          " " +
+          value.location +
+          " " +
+          value.tags +
+          " " +
+          user.name +
+          " " +
+          user.username,
       });
 
       if (!updatedPost) {
         toast({
           title: `${action} post failed. Please try again.`,
         });
-        return
+        return;
       }
       return navigate(`/posts/${post.$id}`);
     }
@@ -70,6 +80,16 @@ const PostForm = ({ post, action }: PostFormProps) => {
     const newPost = await createPost({
       ...value,
       userId: user.id,
+      search_term:
+        value.caption +
+        " " +
+        value.location +
+        " " +
+        value.tags +
+        " " +
+        user.name +
+        " " +
+        user.username,
     });
 
     if (!newPost) {

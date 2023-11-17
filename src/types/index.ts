@@ -19,6 +19,7 @@ export type INewPost = {
   file: File[];
   location?: string;
   tags?: string;
+  search_term: string;
 };
 
 export type IUpdatePost = {
@@ -29,6 +30,7 @@ export type IUpdatePost = {
   file: File[];
   location?: string;
   tags?: string;
+  search_term: string;
 };
 
 export type IUser = {

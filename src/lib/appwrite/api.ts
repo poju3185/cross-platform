@@ -77,7 +77,7 @@ export async function getAccount() {
 
     return currentAccount;
   } catch (error) {
-    console.log("can't find current account")
+    console.log("can't find current account");
     console.log(error);
   }
 }
@@ -149,6 +149,7 @@ export async function createPost(post: INewPost) {
         imageId: uploadedFile.$id,
         location: post.location,
         tags: tags,
+        search_term: post.search_term,
       }
     );
 
@@ -212,10 +213,11 @@ export async function deleteFile(fileId: string) {
 // ============================== GET POSTS
 export async function searchPosts(searchTerm: string) {
   try {
+    console.log("searching...");
     const posts = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      [Query.search("caption", searchTerm)]
+      [Query.search("search_term", searchTerm)]
     );
 
     if (!posts) throw Error;
@@ -227,7 +229,7 @@ export async function searchPosts(searchTerm: string) {
 }
 
 export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
-  const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(9)];
+  const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(6)];
 
   if (pageParam) {
     queries.push(Query.cursorAfter(pageParam.toString()));
@@ -241,7 +243,7 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
     );
 
     if (!posts) throw Error;
-
+    // console.log(posts);
     return posts;
   } catch (error) {
     console.log(error);
@@ -306,6 +308,7 @@ export async function updatePost(post: IUpdatePost) {
         imageId: image.imageId,
         location: post.location,
         tags: tags,
+        search_term: post.search_term,
       }
     );
 
