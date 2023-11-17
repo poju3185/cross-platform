@@ -73,7 +73,7 @@ const PostDetails = () => {
                   className="w-8 h-8 lg:w-12 lg:h-12 rounded-full"
                 />
                 <div className="flex gap-1 flex-col">
-                  <p className="base-medium lg:body-bold text-light-1">
+                  <p className="base-medium lg:body-bold dark:text-light-1">
                     {post?.creator.name}
                   </p>
                   <div className="flex-center gap-2 text-light-3">
