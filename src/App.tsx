@@ -19,13 +19,11 @@ import { Toaster } from "@/components/ui/toaster";
 
 import "./globals.css";
 
-import ThemeSwitcher from "./components/shared/ThemeSwitcher";
 
 const App = () => {
   return (
     // eslint-disable-next-line react/jsx-filename-extension
     <main className="flex h-screen">
-      <ThemeSwitcher/>
       <Routes>
         {/* public routes */}
         <Route element={<AuthLayout />}>

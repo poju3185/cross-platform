@@ -6,6 +6,7 @@ import { Loader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { useUserContext, INITIAL_USER } from "@/context/AuthContext";
+import ThemeToggle from "./ThemeToggle";
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
@@ -76,14 +77,19 @@ const LeftSidebar = () => {
           })}
         </ul>
       </div>
+      <div>
+        <div className="p-4">
+          <ThemeToggle />
+        </div>
 
-      <Button
-        variant="ghost"
-        className="shad-button_ghost"
-        onClick={(e) => handleSignOut(e)}>
-        <img src="/assets/icons/logout.svg" alt="logout" />
-        <p className="small-medium lg:base-medium">Logout</p>
-      </Button>
+        <Button
+          variant="ghost"
+          className="shad-button_ghost"
+          onClick={(e) => handleSignOut(e)}>
+          <img src="/assets/icons/logout.svg" alt="logout" />
+          <p className="small-medium lg:base-medium">Logout</p>
+        </Button>
+      </div>
     </nav>
   );
 };
