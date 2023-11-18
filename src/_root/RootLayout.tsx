@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 
 import Topbar from "@/components/shared/Topbar";
 import Bottombar from "@/components/shared/Bottombar";
@@ -15,6 +16,7 @@ const RootLayout = () => {
       </section>
 
       <Bottombar />
+      <Analytics />
     </div>
   );
 };
