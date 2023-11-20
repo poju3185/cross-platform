@@ -3,6 +3,8 @@ import { ID, Query } from "appwrite";
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
 import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
 
+import md5 from "md5";
+
 // ============================================================
 // AUTH
 // ============================================================
@@ -402,6 +404,44 @@ export async function deleteSavedPost(savedRecordId: string) {
       appwriteConfig.databaseId,
       appwriteConfig.savesCollectionId,
       savedRecordId
+    );
+
+    if (!statusCode) throw Error;
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== FOLLOW USER
+export async function followUser(followerId: string, followeeId: string) {
+  try {
+    const id = md5(followerId + followeeId);
+    const updatedPost = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      id,
+      {
+        follower: followerId,
+        followee: followeeId,
+      }
+    );
+
+    if (!updatedPost) throw Error;
+    return updatedPost;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== UNFOLLOW USER
+export async function unFollowUser(followedRecord: string) {
+  try {
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      followedRecord
     );
 
     if (!statusCode) throw Error;

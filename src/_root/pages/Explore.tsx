@@ -40,7 +40,7 @@ const Explore = () => {
       fetchNextPage();
     }
   }, [inView]);
-  console.log(posts);
+
   if (!posts)
     return (
       <div className="flex-center w-full h-full">

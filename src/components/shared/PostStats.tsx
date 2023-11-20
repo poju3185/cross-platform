@@ -98,7 +98,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
         ) : (
           <img
             src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
-            alt="share"
+            alt="save"
             width={20}
             height={20}
             className="cursor-pointer"

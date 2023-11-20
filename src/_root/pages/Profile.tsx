@@ -7,11 +7,11 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { Button } from "@/components/ui";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById } from "@/lib/react-query/queries";
 import { GridPostList, Loader } from "@/components/shared";
+import FollowButton from "@/components/shared/FollowButton";
 
 interface StabBlockProps {
   value: string | number;
@@ -31,6 +31,8 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
+
+  const handleFollowingChange = () => {};
 
   if (!currentUser)
     return (
@@ -62,8 +64,14 @@ const Profile = () => {
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
               <StatBlock value={currentUser.posts.length} label="Posts" />
-              <StatBlock value={20} label="Followers" />
-              <StatBlock value={20} label="Following" />
+              <StatBlock
+                value={currentUser.followed.length}
+                label="Followers"
+              />
+              <StatBlock
+                value={currentUser.following.length}
+                label="Following"
+              />
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">
@@ -90,9 +98,10 @@ const Profile = () => {
               </Link>
             </div>
             <div className={`${user.id === id && "hidden"}`}>
-              <Button type="button" className="shad-button_primary px-8">
-                Follow
-              </Button>
+              <FollowButton
+                otherUserId={id}
+                onFollowingChange={handleFollowingChange}
+              />
             </div>
           </div>
         </div>
