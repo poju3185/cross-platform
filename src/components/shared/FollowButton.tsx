@@ -7,6 +7,7 @@ import { Button } from "../ui";
 import { useUserContext } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import { Models } from "appwrite";
+import { Loader } from ".";
 
 type FollowButtonProps = {
   otherUserId: string | undefined;
@@ -62,17 +63,21 @@ const FollowButton = ({
       console.error("UserId Undefined.");
     }
   };
-  return (
-    <Button
-      onClick={(e) => handleFollow(e)}
-      type="button"
-      size="sm"
-      className={`${
-        isFollowed ? "shad-button_slate_400" : "shad-button_primary"
-      } px-5`}>
-      {isFollowed ? "Following" : "Follow"}
-    </Button>
-  );
+  if (currentUser) {
+    return (
+      <Button
+        onClick={(e) => handleFollow(e)}
+        type="button"
+        size="sm"
+        className={`${
+          isFollowed ? "shad-button_slate_400" : "shad-button_primary"
+        } px-5`}>
+        {isFollowed ? "Following" : "Follow"}
+      </Button>
+    );
+  } else {
+    return <Loader />;
+  }
 };
 
 export default FollowButton;
