@@ -1,14 +1,26 @@
 import { useParams } from "react-router-dom";
 
 import { Loader } from "@/components/shared";
-import PostForm from "@/components/forms/PostForm";
+import PostForm, { Action } from "@/components/forms/PostForm";
 import { useGetPostById } from "@/lib/react-query/queries";
+import { getPostById } from "@/lib/appwrite/api";
+import { useEffect, useState } from "react";
+import { DocumentData } from "firebase/firestore";
 
 const EditPost = () => {
   const { id } = useParams();
-  const { data: post, isLoading } = useGetPostById(id);
+  const [post, setPost] = useState<DocumentData | undefined>();
 
-  if (isLoading)
+  // get post data
+  const getPost = async () => {
+    const data = await getPostById(id);
+    setPost(data);
+  };
+  useEffect(() => {
+    getPost();
+  }, []);
+
+  if (!post)
     return (
       <div className="flex-center w-full h-full">
         <Loader />
@@ -29,7 +41,7 @@ const EditPost = () => {
           <h2 className="h3-bold md:h2-bold text-left w-full">Edit Post</h2>
         </div>
 
-        {isLoading ? <Loader /> : <PostForm action="Update" post={post} />}
+      <PostForm action={Action.Update} post={post} postId={id} />
       </div>
     </div>
   );

@@ -256,7 +256,7 @@
   }
 
   .shad-form_message {
-    @apply text-red !important;
+    @apply text-red-500 !important;
   }
 
   .shad-input {
@@ -269,7 +269,7 @@
 
   /* Button */
   .shad-button_primary {
-    @apply bg-primary-500 hover:bg-primary-500 text-light-1 flex gap-2 !important;
+    @apply bg-primary-500 hover:bg-primary-600 transition-colors text-light-1 flex gap-2 !important;
   }
 
   .shad-button_dark_4 {
@@ -277,6 +277,10 @@
   }
   .shad-button_slate_400 {
     @apply h-10 bg-slate-400 px-5 text-light-1 flex gap-2 !important;
+  }
+
+  .shad-button_red {
+    @apply bg-red-500 hover:bg-red-600 text-light-1 flex gap-2 !important;
   }
 
   .shad-button_ghost {

@@ -19,10 +19,11 @@ import {
 import { usersCollectionRef } from "@/firebase/references";
 import { useToast } from "@/components/ui";
 import { CopySlash } from "lucide-react";
+import { getUserById } from "@/lib/appwrite/api";
 
 const INITIAL_STATE = {
   user: null,
-  userData: null,
+  userData: undefined,
   signup: async () => {
     throw new Error("signup function not implemented");
   },
@@ -36,7 +37,7 @@ const INITIAL_STATE = {
 
 type IContextType = {
   user: User | null;
-  userData: DocumentData | null;
+  userData: DocumentData | undefined;
   signup: (email: string, password: string) => Promise<UserCredential>;
   signin: (email: string, password: string) => Promise<UserCredential>;
   signout: () => Promise<void>;
@@ -50,7 +51,7 @@ export function AuthProviderf({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<DocumentData | null>(null);
+  const [userData, setUserData] = useState<DocumentData | undefined>(undefined);
 
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -70,9 +71,8 @@ export function AuthProviderf({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user !== null) {
         setUser(user);
-        const q = query(usersCollectionRef, where("uid", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-        setUserData(querySnapshot?.docs[0]?.data());
+        const data = await getUserById(user.uid);
+        setUserData(data);
         setLoadingUser(false);
       } else {
         navigate("/sign-in");

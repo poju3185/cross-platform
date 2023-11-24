@@ -1,14 +1,27 @@
 import { Models } from "appwrite";
 
 // import { useToast } from "@/components/ui/use-toast";
-// import { Loader, PostCard, UserCard } from "@/components/shared";
+import { Loader, PostCard, UserCard } from "@/components/shared";
 // import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
 import { useAuth } from "@/context/AuthContextf";
+import { useEffect, useState } from "react";
+import { postsCollectionRef } from "@/firebase/references";
+import { DocumentData, QueryDocumentSnapshot, onSnapshot } from "firebase/firestore";
 
 const Home = () => {
   // const { toast } = useToast();
-  const { userData } = useAuth();
-  console.log(userData)
+  // const { userData } = useAuth();
+  // console.log(userData)
+  const [posts, setPosts] = useState<QueryDocumentSnapshot<DocumentData>[]>();
+  useEffect(() => {
+    const unsubscribe = onSnapshot(postsCollectionRef, (collection) => {
+      // const data = collection.docs.map((doc) => doc.data());
+      setPosts(collection.docs);
+    });
+
+    return unsubscribe;
+  }, []);
+
   // const {
   //   data: posts,
   //   isLoading: isPostLoading,
@@ -38,17 +51,17 @@ const Home = () => {
       <div className="home-container">
         <div className="home-posts">
           <h2 className="h3-bold md:h2-bold text-left w-full">Home Feed</h2>
-          {/* {isPostLoading && !posts ? (
+          {!posts ? (
             <Loader />
           ) : (
             <ul className="flex flex-col flex-1 gap-9 w-full ">
-              {posts?.documents.map((post: Models.Document) => (
-                <li key={post.$id} className="flex justify-center w-full">
+              {posts.map((post) => (
+                <li key={post.id} className="flex justify-center w-full">
                   <PostCard post={post} />
                 </li>
               ))}
             </ul>
-          )} */}
+          )}
         </div>
       </div>
 

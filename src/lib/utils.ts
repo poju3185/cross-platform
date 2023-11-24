@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
+import { Timestamp } from "firebase/firestore";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -26,8 +27,8 @@ export function formatDateString(dateString: string) {
 }
 
 // 
-export const multiFormatDateString = (timestamp: string = ""): string => {
-  const timestampNum = Math.round(new Date(timestamp).getTime() / 1000);
+export const multiFormatDateString = (timestamp: Timestamp): string => {
+  const timestampNum = Math.round(new Date(timestamp.seconds).getTime());
   const date: Date = new Date(timestampNum * 1000);
   const now: Date = new Date();
 
@@ -39,7 +40,7 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
 
   switch (true) {
     case Math.floor(diffInDays) >= 30:
-      return formatDateString(timestamp);
+      return formatDateString(timestamp.toString());
     case Math.floor(diffInDays) === 1:
       return `${Math.floor(diffInDays)} day ago`;
     case Math.floor(diffInDays) > 1 && diffInDays < 30:

@@ -13,12 +13,12 @@ import {
   signOutAccount,
   getUsers,
   createPost,
-  getPostById,
+  getPostByIdOld,
   updatePost,
   getUserPosts,
   deletePost,
   likePost,
-  getUserById,
+  getUserByIdOld,
   updateUser,
   getRecentPosts,
   getInfinitePosts,
@@ -104,7 +104,7 @@ export const useCreatePost = () => {
 export const useGetPostById = (postId?: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_POST_BY_ID, postId],
-    queryFn: () => getPostById(postId),
+    queryFn: () => getPostByIdOld(postId),
     enabled: !!postId,
   });
 };
@@ -269,7 +269,7 @@ export const useGetUsers = (limit?: number) => {
 export const useGetUserById = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_USER_BY_ID, userId],
-    queryFn: () => getUserById(userId),
+    queryFn: () => getUserByIdOld(userId),
     enabled: !!userId,
   });
 };

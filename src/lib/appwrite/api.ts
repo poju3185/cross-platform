@@ -4,6 +4,9 @@ import { appwriteConfig, account, databases, storage, avatars } from "./config";
 import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
 
 import md5 from "md5";
+import { doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { usersCollectionRef } from "@/firebase/references";
+import { db } from "@/firebase/firebase";
 
 // ============================================================
 // AUTH
@@ -254,6 +257,19 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
 
 // ============================== GET POST BY ID
 export async function getPostById(postId?: string) {
+  if (!postId) throw Error;
+
+  try {
+    const docRef = doc(db, "posts", postId);
+    const docSnap = await getDoc(docRef);
+    return docSnap.data();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== (Depreciated) GET POST BY ID
+export async function getPostByIdOld(postId?: string) {
   if (!postId) throw Error;
 
   try {
@@ -514,9 +530,19 @@ export async function getUsers(limit?: number) {
     console.log(error);
   }
 }
-
 // ============================== GET USER BY ID
+// return fields in db
 export async function getUserById(userId: string) {
+  try {
+    const q = query(usersCollectionRef, where("uid", "==", userId));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot?.docs[0]?.data();
+  } catch (error) {
+    console.log(error);
+  }
+}
+// ============================== (To Depriciate) GET USER BY ID
+export async function getUserByIdOld(userId: string) {
   try {
     const user = await databases.getDocument(
       appwriteConfig.databaseId,

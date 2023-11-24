@@ -19,22 +19,41 @@ import { PostValidation } from "@/lib/validation";
 import { useToast } from "@/components/ui/use-toast";
 import { FileUploader, Loader } from "@/components/shared";
 import { useState } from "react";
-import { getDownloadURL, uploadBytes } from "firebase/storage";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
 import { imageStorageRef, postsCollectionRef } from "@/firebase/references";
-import { addDoc } from "firebase/firestore";
+import {
+  DocumentData,
+  addDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { useAuth } from "@/context/AuthContextf";
+import { db, storage } from "@/firebase/firebase";
 
 type PostFormProps = {
-  post?: Models.Document;
-  action: "Create" | "Update";
+  post?: DocumentData;
+  postId?: string;
+  action: Action;
 };
 
-const PostForm = ({ post, action }: PostFormProps) => {
+export enum Action {
+  Create = "Create",
+  Update = "Update",
+}
+const PostForm = ({ post, postId, action }: PostFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoadingCreate, setIsLoadingCreate] = useState(false);
   const [isLoadingUpdate, setIsLoadingUpdate] = useState(false);
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
   const form = useForm<z.infer<typeof PostValidation>>({
     resolver: zodResolver(PostValidation),
@@ -42,7 +61,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
       caption: post ? post?.caption : "",
       file: [],
       location: post ? post.location : "",
-      tags: post ? post.tags.join(",") : "",
+      tags: post ? post.tags : "",
     },
   });
 
@@ -108,7 +127,42 @@ const PostForm = ({ post, action }: PostFormProps) => {
   // };
 
   // Handler
+
   const handleSubmit = async (value: z.infer<typeof PostValidation>) => {
+    // ACTION = UPDATE
+    if (post && postId && action === "Update") {
+      try {
+        setIsLoadingUpdate(true);
+        const isImageUpdated = value.file && value.file.length > 0;
+        let url;
+        // User try to update image
+        if (isImageUpdated) {
+          // Delete previous image
+          const imageToDeleteRef = ref(storage, post.imagesUrl);
+          await deleteObject(imageToDeleteRef);
+          const snapshot = await uploadBytes(imageStorageRef, value.file[0]);
+          url = await getDownloadURL(snapshot.ref);
+        }
+        const postRef = doc(db, "posts", postId);
+        await updateDoc(postRef, {
+          caption: value.caption,
+          location: value.location,
+          ...(isImageUpdated ? { imagesUrl: url } : {}),
+          tags: value.tags,
+        });
+        setIsLoadingUpdate(false);
+        navigate("/");
+      } catch (error) {
+        console.log(error);
+        toast({
+          title: `${action} post failed. Please try again.`,
+        });
+      }
+      return;
+    }
+
+    // ACTION = CREATE
+    setIsLoadingCreate(true);
     try {
       const snapshot = await uploadBytes(imageStorageRef, value.file[0]);
       const url = await getDownloadURL(snapshot.ref);
@@ -118,9 +172,35 @@ const PostForm = ({ post, action }: PostFormProps) => {
         location: value.location,
         imagesUrl: url,
         tags: value.tags,
+        createdAt: serverTimestamp(),
       });
+      setIsLoadingCreate(false);
+      navigate("/");
     } catch (error) {
       console.log(error);
+      toast({
+        title: `${action} post failed. Please try again.`,
+      });
+      setIsLoadingCreate(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsLoadingDelete(true);
+    try {
+      if (post && postId) {
+        const imageToDeleteRef = ref(storage, post.imagesUrl);
+        await deleteObject(imageToDeleteRef);
+        const postRef = doc(db, "posts", postId);
+        await deleteDoc(postRef);
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Delete post failed. Please try again.",
+      });
+      setIsLoadingDelete(false);
     }
   };
 
@@ -155,7 +235,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
               <FormControl>
                 <FileUploader
                   fieldChange={field.onChange}
-                  mediaUrl={post?.imageUrl}
+                  mediaUrl={post?.imagesUrl}
                 />
               </FormControl>
               <FormMessage className="shad-form_message" />
@@ -202,14 +282,29 @@ const PostForm = ({ post, action }: PostFormProps) => {
           <Button
             type="button"
             className="shad-button_slate_400 dark:shad-button_dark_4"
+            disabled={isLoadingCreate || isLoadingUpdate || isLoadingDelete}
             onClick={() => navigate(-1)}>
             Cancel
           </Button>
+          {action !== Action.Create && (
+            <Button
+              type="button"
+              className="shad-button_red whitespace-nowrap"
+              onClick={handleDelete}
+              disabled={isLoadingCreate || isLoadingUpdate || isLoadingDelete}>
+              {(isLoadingCreate || isLoadingUpdate || isLoadingDelete) && (
+                <Loader />
+              )}
+              Delete Post
+            </Button>
+          )}
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
-            disabled={isLoadingCreate || isLoadingUpdate}>
-            {(isLoadingCreate || isLoadingUpdate) && <Loader />}
+            disabled={isLoadingCreate || isLoadingUpdate || isLoadingDelete}>
+            {(isLoadingCreate || isLoadingUpdate || isLoadingDelete) && (
+              <Loader />
+            )}
             {action} Post
           </Button>
         </div>
