@@ -17,9 +17,12 @@ import {
 } from "@/components/ui";
 import { PostValidation } from "@/lib/validation";
 import { useToast } from "@/components/ui/use-toast";
-import { useUserContext } from "@/context/AuthContext";
 import { FileUploader, Loader } from "@/components/shared";
-import { useCreatePost, useUpdatePost } from "@/lib/react-query/queries";
+import { useState } from "react";
+import { getDownloadURL, uploadBytes } from "firebase/storage";
+import { imageStorageRef, postsCollectionRef } from "@/firebase/references";
+import { addDoc } from "firebase/firestore";
+import { useAuth } from "@/context/AuthContextf";
 
 type PostFormProps = {
   post?: Models.Document;
@@ -29,7 +32,10 @@ type PostFormProps = {
 const PostForm = ({ post, action }: PostFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useUserContext();
+  const { user } = useAuth();
+  const [isLoadingCreate, setIsLoadingCreate] = useState(false);
+  const [isLoadingUpdate, setIsLoadingUpdate] = useState(false);
+
   const form = useForm<z.infer<typeof PostValidation>>({
     resolver: zodResolver(PostValidation),
     defaultValues: {
@@ -41,64 +47,81 @@ const PostForm = ({ post, action }: PostFormProps) => {
   });
 
   // Query
-  const { mutateAsync: createPost, isLoading: isLoadingCreate } =
-    useCreatePost();
-  const { mutateAsync: updatePost, isLoading: isLoadingUpdate } =
-    useUpdatePost();
+  // const { mutateAsync: createPost, isLoading: isLoadingCreate } =
+  //   useCreatePost();
+  // const { mutateAsync: updatePost, isLoading: isLoadingUpdate } =
+  //   useUpdatePost();
+
+  // Handler
+  // const handleSubmit = async (value: z.infer<typeof PostValidation>) => {
+  //   // ACTION = UPDATE
+  //   if (post && action === "Update") {
+  //     const updatedPost = await updatePost({
+  //       ...value,
+  //       postId: post.$id,
+  //       imageId: post.imageId,
+  //       imageUrl: post.imageUrl,
+  //       search_term:
+  //         value.caption +
+  //         " " +
+  //         value.location +
+  //         " " +
+  //         value.tags +
+  //         " " +
+  //         user.name +
+  //         " " +
+  //         user.username,
+  //     });
+
+  //     if (!updatedPost) {
+  //       toast({
+  //         title: `${action} post failed. Please try again.`,
+  //       });
+  //       return;
+  //     }
+  //     return navigate(`/posts/${post.$id}`);
+  //   }
+
+  //   // ACTION = CREATE
+  //   const newPost = await createPost({
+  //     ...value,
+  //     userId: user.id,
+  //     search_term:
+  //       value.caption +
+  //       " " +
+  //       value.location +
+  //       " " +
+  //       value.tags +
+  //       " " +
+  //       user.name +
+  //       " " +
+  //       user.username,
+  //   });
+
+  //   if (!newPost) {
+  //     toast({
+  //       title: `${action} post failed. Please try again.`,
+  //     });
+  //     return;
+  //   }
+  //   navigate("/");
+  // };
 
   // Handler
   const handleSubmit = async (value: z.infer<typeof PostValidation>) => {
-    // ACTION = UPDATE
-    if (post && action === "Update") {
-      const updatedPost = await updatePost({
-        ...value,
-        postId: post.$id,
-        imageId: post.imageId,
-        imageUrl: post.imageUrl,
-        search_term:
-          value.caption +
-          " " +
-          value.location +
-          " " +
-          value.tags +
-          " " +
-          user.name +
-          " " +
-          user.username,
+    try {
+      const snapshot = await uploadBytes(imageStorageRef, value.file[0]);
+      const url = await getDownloadURL(snapshot.ref);
+      await addDoc(postsCollectionRef, {
+        creatorId: user?.uid,
+        caption: value.caption,
+        location: value.location,
+        imagesUrl: url,
+        tags: value.tags,
       });
-
-      if (!updatedPost) {
-        toast({
-          title: `${action} post failed. Please try again.`,
-        });
-        return;
-      }
-      return navigate(`/posts/${post.$id}`);
+    } catch (error) {
+      console.log(error);
     }
-
-    // ACTION = CREATE
-    const newPost = await createPost({
-      ...value,
-      userId: user.id,
-      search_term:
-        value.caption +
-        " " +
-        value.location +
-        " " +
-        value.tags +
-        " " +
-        user.name +
-        " " +
-        user.username,
-    });
-
-    if (!newPost) {
-      toast({
-        title: `${action} post failed. Please try again.`,
-      });
-      return;
-    }
-    navigate("/");
   };
 
   return (

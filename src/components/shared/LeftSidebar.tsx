@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { useUserContext, INITIAL_USER } from "@/context/AuthContext";
 import ThemeToggle from "./ThemeToggle";
+import { useAuth } from "@/context/AuthContextf";
 
 const LeftSidebar = () => {
+  const { signout: signoutF } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { user, setUser, setIsAuthenticated, isLoading } = useUserContext();
@@ -19,9 +21,10 @@ const LeftSidebar = () => {
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
-    signOut();
-    setIsAuthenticated(false);
-    setUser(INITIAL_USER);
+    // signOut();
+    // setIsAuthenticated(false);
+    // setUser(INITIAL_USER);
+    signoutF();
     navigate("/sign-in");
   };
 

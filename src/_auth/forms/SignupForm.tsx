@@ -22,8 +22,14 @@ import {
 } from "@/lib/react-query/queries";
 import { SignupValidation } from "@/lib/validation";
 import { useUserContext } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContextf";
+import { useState } from "react";
+import { addDoc } from "firebase/firestore";
+import { usersCollectionRef } from "@/firebase/references";
 
 const SignupForm = () => {
+  const { user: currentUser, signup } = useAuth();
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
@@ -45,44 +51,65 @@ const SignupForm = () => {
     useSignInAccount();
 
   // Handler
+  // const handleSignup = async (user: z.infer<typeof SignupValidation>) => {
+  //   try {
+  //     const newUser = await createUserAccount(user);
+
+  //     if (!newUser) {
+  //       toast({ title: "Sign up failed. Please try again." });
+  //       return;
+  //     } else if (typeof newUser === "object" && "message" in newUser) {
+  //       toast({ title: newUser.message + " Please try again." });
+  //       return;
+  //     }
+
+  //     const session = await signInAccount({
+  //       email: user.email,
+  //       password: user.password,
+  //     });
+
+  //     if (!session) {
+  //       toast({ title: "Something went wrong. Please login your new account" });
+
+  //       navigate("/sign-in");
+
+  //       return;
+  //     }
+
+  //     const isLoggedIn = await checkAuthUser();
+
+  //     if (isLoggedIn) {
+  //       form.reset();
+
+  //       navigate("/");
+  //     } else {
+  //       toast({ title: "Login failed. Please try again." });
+
+  //       return;
+  //     }
+  //   } catch (error) {
+  //     console.log({ error });
+  //   }
+  // };
   const handleSignup = async (user: z.infer<typeof SignupValidation>) => {
+    setLoading(true);
     try {
-      const newUser = await createUserAccount(user);
-
-      if (!newUser) {
-        toast({ title: "Sign up failed. Please try again." });
-        return;
-      } else if (typeof newUser === "object" && "message" in newUser) {
-        toast({ title: newUser.message + " Please try again." });
-        return;
-      }
-
-      const session = await signInAccount({
-        email: user.email,
-        password: user.password,
+      const userCred = await signup(user.email, user.password);
+      console.log(userCred)
+      await addDoc(usersCollectionRef, {
+        uid: userCred.user.uid,
+        username: user.username,
+        name: user.name,
+        email:userCred.user.email,
+        provider: userCred.user.providerId,
+        bio: "",
+        profileImage: userCred.user.photoURL,
       });
-
-      if (!session) {
-        toast({ title: "Something went wrong. Please login your new account" });
-
-        navigate("/sign-in");
-
-        return;
-      }
-
-      const isLoggedIn = await checkAuthUser();
-
-      if (isLoggedIn) {
-        form.reset();
-
-        navigate("/");
-      } else {
-        toast({ title: "Login failed. Please try again." });
-
-        return;
-      }
+      navigate("/");
     } catch (error) {
       console.log({ error });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -158,7 +185,10 @@ const SignupForm = () => {
           />
 
           <Button type="submit" className="shad-button_primary">
-            {isCreatingAccount || isSigningInUser || isUserLoading ? (
+            {isCreatingAccount ||
+            isSigningInUser ||
+            isUserLoading ||
+            loading ? (
               <div className="flex-center gap-2">
                 <Loader /> Loading...
               </div>
