@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "@/firebase/firebase";
 import {
+  IdTokenResult,
   User,
   UserCredential,
   createUserWithEmailAndPassword,
@@ -9,21 +10,47 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import {
-  DocumentData,
-  getDocs,
-  onSnapshot,
-  query,
-  where,
-} from "firebase/firestore";
-import { usersCollectionRef } from "@/firebase/references";
-import { useToast } from "@/components/ui";
-import { CopySlash } from "lucide-react";
+import { DocumentData } from "firebase/firestore";
 import { getUserById } from "@/lib/appwrite/api";
 
+const INITIAL_USER: User = {
+  emailVerified: false,
+  isAnonymous: false,
+  metadata: {
+    creationTime: "", // Replace with actual creation time
+    lastSignInTime: "", // Replace with actual last sign in time
+  },
+  providerData: [],
+  refreshToken: "",
+  tenantId: null,
+  delete: function (): Promise<void> {
+    throw new Error("Function not implemented.");
+  },
+  getIdToken: function (forceRefresh?: boolean | undefined): Promise<string> {
+    throw new Error("Function not implemented.");
+  },
+  getIdTokenResult: function (
+    forceRefresh?: boolean | undefined
+  ): Promise<IdTokenResult> {
+    throw new Error("Function not implemented.");
+  },
+  reload: function (): Promise<void> {
+    throw new Error("Function not implemented.");
+  },
+  toJSON: function (): object {
+    throw new Error("Function not implemented.");
+  },
+  displayName: null,
+  email: null,
+  phoneNumber: null,
+  photoURL: null,
+  providerId: "",
+  uid: "",
+};
+const INITIAL_USER_DATA: DocumentData = {};
 const INITIAL_STATE = {
-  user: null,
-  userData: undefined,
+  user: INITIAL_USER,
+  userData: INITIAL_USER_DATA,
   signup: async () => {
     throw new Error("signup function not implemented");
   },
@@ -36,8 +63,8 @@ const INITIAL_STATE = {
 };
 
 type IContextType = {
-  user: User | null;
-  userData: DocumentData | undefined;
+  user: User;
+  userData: DocumentData;
   signup: (email: string, password: string) => Promise<UserCredential>;
   signin: (email: string, password: string) => Promise<UserCredential>;
   signout: () => Promise<void>;
@@ -49,9 +76,8 @@ export const useAuth = () => useContext(AuthContext);
 
 export function AuthProviderf({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<DocumentData | undefined>(undefined);
+  const [user, setUser] = useState<User>(INITIAL_USER);
+  const [userData, setUserData] = useState<DocumentData>(INITIAL_USER_DATA);
 
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -72,6 +98,9 @@ export function AuthProviderf({ children }: { children: React.ReactNode }) {
       if (user !== null) {
         setUser(user);
         const data = await getUserById(user.uid);
+        if (data === undefined) {
+          throw Error;
+        }
         setUserData(data);
         setLoadingUser(false);
       } else {
@@ -82,11 +111,6 @@ export function AuthProviderf({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  // if (userData != null) {
-  //   unsub()
-  //   console.log('yo')
-  //   // setLoadingUserData(false);
-  // }
   const value = {
     user,
     userData,

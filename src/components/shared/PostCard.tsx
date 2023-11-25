@@ -26,7 +26,7 @@ const PostCard = ({ post }: PostCardProps) => {
   const caption = post.get("caption");
   const creatorId = post.get("creatorId");
   const imagesUrl = post.get("imagesUrl");
-  const location = post.get("locationcaption");
+  const location = post.get("location");
   const tags = post.get("tags");
   const createdAt = post.get("createdAt");
 
@@ -68,7 +68,7 @@ const PostCard = ({ post }: PostCardProps) => {
 
         <Link
           to={`/update-post/${postId}`}
-          className={`${user?.uid !== creatorId && "hidden"}`}>
+          className={`${user.uid !== creatorId && "hidden"}`}>
           <img
             src={"/assets/icons/edit.svg"}
             alt="edit"
@@ -98,8 +98,9 @@ const PostCard = ({ post }: PostCardProps) => {
           className="post-card_img"
         />
       </Link>
+      
 
-      {/* <PostStats post={post} userId={user.id} /> */}
+      <PostStats post={post}/>
     </div>
   );
 };

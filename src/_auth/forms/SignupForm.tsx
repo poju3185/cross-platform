@@ -24,7 +24,7 @@ import { SignupValidation } from "@/lib/validation";
 import { useUserContext } from "@/context/AuthContext";
 import { useAuth } from "@/context/AuthContextf";
 import { useState } from "react";
-import { addDoc } from "firebase/firestore";
+import { Timestamp, addDoc, serverTimestamp } from "firebase/firestore";
 import { usersCollectionRef } from "@/firebase/references";
 
 const SignupForm = () => {
@@ -95,7 +95,6 @@ const SignupForm = () => {
     setLoading(true);
     try {
       const userCred = await signup(user.email, user.password);
-      console.log(userCred)
       await addDoc(usersCollectionRef, {
         uid: userCred.user.uid,
         username: user.username,
@@ -104,6 +103,7 @@ const SignupForm = () => {
         provider: userCred.user.providerId,
         bio: "",
         profileImage: userCred.user.photoURL,
+        createdAt: serverTimestamp()
       });
       navigate("/");
     } catch (error) {

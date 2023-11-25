@@ -1,5 +1,4 @@
 import * as z from "zod";
-import { Models } from "appwrite";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -127,7 +126,6 @@ const PostForm = ({ post, postId, action }: PostFormProps) => {
   // };
 
   // Handler
-
   const handleSubmit = async (value: z.infer<typeof PostValidation>) => {
     // ACTION = UPDATE
     if (post && postId && action === "Update") {
@@ -167,7 +165,7 @@ const PostForm = ({ post, postId, action }: PostFormProps) => {
       const snapshot = await uploadBytes(imageStorageRef, value.file[0]);
       const url = await getDownloadURL(snapshot.ref);
       await addDoc(postsCollectionRef, {
-        creatorId: user?.uid,
+        creatorId: user.uid,
         caption: value.caption,
         location: value.location,
         imagesUrl: url,
