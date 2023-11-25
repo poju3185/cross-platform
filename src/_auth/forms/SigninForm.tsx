@@ -24,7 +24,7 @@ import { useState } from "react";
 
 
 const SigninForm = () => {
-  const { user: currentUser, signin } = useAuth();
+  const { user,userData, signin } = useAuth();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();

@@ -5,7 +5,7 @@ import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
 
 import md5 from "md5";
 import { doc, getDoc, getDocs, query, where } from "firebase/firestore";
-import { usersCollectionRef } from "@/firebase/references";
+import { postsCollectionRef, usersCollectionRef } from "@/firebase/references";
 import { db } from "@/firebase/firebase";
 
 // ============================================================
@@ -262,7 +262,24 @@ export async function getPostById(postId?: string) {
   try {
     const docRef = doc(db, "posts", postId);
     const docSnap = await getDoc(docRef);
-    return docSnap.data();
+    return docSnap;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET POSTS BY USERID
+// return list of Documents
+export async function getPostsByUserId(userId?: string) {
+  if (!userId) throw Error;
+
+  try {
+    const q = query(
+      postsCollectionRef,
+      where("creatorId", "==", userId)
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot?.docs;
   } catch (error) {
     console.log(error);
   }

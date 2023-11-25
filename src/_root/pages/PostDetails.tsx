@@ -10,27 +10,49 @@ import {
   useDeletePost,
 } from "@/lib/react-query/queries";
 import { multiFormatDateString } from "@/lib/utils";
-import { useUserContext } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContextf";
+import { getPostById, getUserById } from "@/lib/appwrite/api";
+import { useEffect, useState } from "react";
+import {
+  DocumentData,
+  DocumentSnapshot,
+} from "firebase/firestore";
 
 const PostDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { user } = useUserContext();
+  const { user } = useAuth();
 
-  const { data: post, isLoading } = useGetPostById(id);
-  const { data: userPosts, isLoading: isUserPostLoading } = useGetUserPosts(
-    post?.creator.$id
-  );
-  const { mutate: deletePost } = useDeletePost();
+  const [post, setPost] = useState<
+    DocumentSnapshot<DocumentData> | undefined
+  >();
+  const [creator, setCreator] = useState<DocumentData | undefined>();
 
-  const relatedPosts = userPosts?.documents.filter(
-    (userPost) => userPost.$id !== id
-  );
 
-  const handleDeletePost = () => {
-    deletePost({ postId: id, imageId: post?.imageId });
-    navigate(-1);
+  // get post data
+  const getPost = async () => {
+    const postData = await getPostById(id);
+    const creatorData = await getUserById(postData?.get("creatorId"));
+    setPost(postData);
+    setCreator(creatorData);
   };
+  
+  useEffect(() => {
+    getPost();
+  }, []);
+  // const { data: userPosts, isLoading: isUserPostLoading } = useGetUserPosts(
+  //   post?.creator.$id
+  // );
+  // const { mutate: deletePost } = useDeletePost();
+
+  // const relatedPosts = userPosts?.documents.filter(
+  //   (userPost) => userPost.$id !== id
+  // );
+
+  // const handleDeletePost = () => {
+  //   deletePost({ postId: id, imageId: post?.imageId });
+  //   navigate(-1);
+  // };
 
   return (
     <div className="post_details-container">
@@ -49,24 +71,24 @@ const PostDetails = () => {
         </Button>
       </div>
 
-      {isLoading || !post ? (
+      {!post || !creator ? (
         <Loader />
       ) : (
         <div className="post_details-card">
           <img
-            src={post?.imageUrl}
-            alt="creator"
+            src={post.get("imagesUrl")}
+            alt="post image"
             className="post_details-img"
           />
 
           <div className="post_details-info">
             <div className="flex-between w-full">
               <Link
-                to={`/profile/${post?.creator.$id}`}
+                to={`/profile/${post.get("creatorId")}`}
                 className="flex items-center gap-3">
                 <img
                   src={
-                    post?.creator.imageUrl ||
+                    creator.profileImage ||
                     "/assets/icons/profile-placeholder.svg"
                   }
                   alt="creator"
@@ -74,15 +96,15 @@ const PostDetails = () => {
                 />
                 <div className="flex gap-1 flex-col">
                   <p className="base-medium lg:body-bold dark:text-light-1">
-                    {post?.creator.name}
+                    {creator.name}
                   </p>
                   <div className="flex-center gap-2 text-light-3">
                     <p className="subtle-semibold lg:small-regular ">
-                      {multiFormatDateString(post?.$createdAt)}
+                      {multiFormatDateString(post.get("createdAt"))}
                     </p>
                     •
                     <p className="subtle-semibold lg:small-regular">
-                      {post?.location}
+                      {post.get("location")}
                     </p>
                   </div>
                 </div>
@@ -90,8 +112,8 @@ const PostDetails = () => {
 
               <div className="flex-center gap-4">
                 <Link
-                  to={`/update-post/${post?.$id}`}
-                  className={`${user.id !== post?.creator.$id && "hidden"}`}>
+                  to={`/update-post/${post.id}`}
+                  className={`${user.uid !== creator.uid && "hidden"}`}>
                   <img
                     src={"/assets/icons/edit.svg"}
                     alt="edit"
@@ -100,7 +122,7 @@ const PostDetails = () => {
                   />
                 </Link>
 
-                <Button
+                {/* <Button
                   onClick={handleDeletePost}
                   variant="ghost"
                   className={`ost_details-delete_btn ${
@@ -112,44 +134,43 @@ const PostDetails = () => {
                     width={24}
                     height={24}
                   />
-                </Button>
+                </Button> */}
               </div>
             </div>
 
             <hr className="border w-full border-dark-4/80" />
 
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
-              <p>{post?.caption}</p>
+              <p>{post.get("caption")}</p>
               <ul className="flex gap-1 mt-2">
-                {post?.tags.map((tag: string, index: string) => (
-                  <li
-                    key={`${tag}${index}`}
-                    className="text-light-3 small-regular">
-                    #{tag}
-                  </li>
-                ))}
+                {post
+                  .get("tags")
+                  .split(",")
+                  .map((tag: string, index: string) => (
+                    <li
+                      key={`${tag.trim()}${index}`}
+                      className="text-light-3 small-regular">
+                      #{tag.trim()}
+                    </li>
+                  ))}
               </ul>
             </div>
 
             <div className="w-full">
-              <PostStats post={post} userId={user.id} />
+              <PostStats post={post} />
             </div>
           </div>
         </div>
       )}
 
-      <div className="w-full max-w-5xl">
+      {/* <div className="w-full max-w-5xl">
         <hr className="border w-full border-dark-4/80" />
 
         <h3 className="body-bold md:h3-bold w-full my-10">
           More Related Posts
         </h3>
-        {isUserPostLoading || !relatedPosts ? (
-          <Loader />
-        ) : (
-          <GridPostList posts={relatedPosts} />
-        )}
-      </div>
+        {!relatedPosts ? <Loader /> : <GridPostList posts={relatedPosts} />}
+      </div> */}
     </div>
   );
 };

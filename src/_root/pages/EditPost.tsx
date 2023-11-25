@@ -4,11 +4,13 @@ import { Loader } from "@/components/shared";
 import PostForm, { Action } from "@/components/forms/PostForm";
 import { getPostById } from "@/lib/appwrite/api";
 import { useEffect, useState } from "react";
-import { DocumentData } from "firebase/firestore";
+import { DocumentData, DocumentSnapshot } from "firebase/firestore";
 
 const EditPost = () => {
   const { id } = useParams();
-  const [post, setPost] = useState<DocumentData | undefined>();
+  const [post, setPost] = useState<
+    DocumentSnapshot<DocumentData> | undefined
+  >();
 
   // get post data
   const getPost = async () => {
@@ -40,7 +42,7 @@ const EditPost = () => {
           <h2 className="h3-bold md:h2-bold text-left w-full">Edit Post</h2>
         </div>
 
-      <PostForm action={Action.Update} post={post} postId={id} />
+        <PostForm action={Action.Update} post={post} />
       </div>
     </div>
   );

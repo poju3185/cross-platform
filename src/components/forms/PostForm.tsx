@@ -27,6 +27,7 @@ import {
 import { imageStorageRef, postsCollectionRef } from "@/firebase/references";
 import {
   DocumentData,
+  DocumentSnapshot,
   addDoc,
   deleteDoc,
   doc,
@@ -37,8 +38,7 @@ import { useAuth } from "@/context/AuthContextf";
 import { db, storage } from "@/firebase/firebase";
 
 type PostFormProps = {
-  post?: DocumentData;
-  postId?: string;
+  post?: DocumentSnapshot<DocumentData>;
   action: Action;
 };
 
@@ -46,7 +46,7 @@ export enum Action {
   Create = "Create",
   Update = "Update",
 }
-const PostForm = ({ post, postId, action }: PostFormProps) => {
+const PostForm = ({ post, action }: PostFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -57,10 +57,10 @@ const PostForm = ({ post, postId, action }: PostFormProps) => {
   const form = useForm<z.infer<typeof PostValidation>>({
     resolver: zodResolver(PostValidation),
     defaultValues: {
-      caption: post ? post?.caption : "",
+      caption: post ? post.get("caption") : "",
       file: [],
-      location: post ? post.location : "",
-      tags: post ? post.tags : "",
+      location: post ? post.get("location") : "",
+      tags: post ? post.get("tags") : "",
     },
   });
 
@@ -128,7 +128,7 @@ const PostForm = ({ post, postId, action }: PostFormProps) => {
   // Handler
   const handleSubmit = async (value: z.infer<typeof PostValidation>) => {
     // ACTION = UPDATE
-    if (post && postId && action === "Update") {
+    if (post && action === "Update") {
       try {
         setIsLoadingUpdate(true);
         const isImageUpdated = value.file && value.file.length > 0;
@@ -136,12 +136,12 @@ const PostForm = ({ post, postId, action }: PostFormProps) => {
         // User try to update image
         if (isImageUpdated) {
           // Delete previous image
-          const imageToDeleteRef = ref(storage, post.imagesUrl);
+          const imageToDeleteRef = ref(storage, post.get("imagesUrl"));
           await deleteObject(imageToDeleteRef);
           const snapshot = await uploadBytes(imageStorageRef, value.file[0]);
           url = await getDownloadURL(snapshot.ref);
         }
-        const postRef = doc(db, "posts", postId);
+        const postRef = doc(db, "posts", post.id);
         await updateDoc(postRef, {
           caption: value.caption,
           location: value.location,
@@ -186,10 +186,10 @@ const PostForm = ({ post, postId, action }: PostFormProps) => {
   const handleDelete = async () => {
     setIsLoadingDelete(true);
     try {
-      if (post && postId) {
-        const imageToDeleteRef = ref(storage, post.imagesUrl);
+      if (post) {
+        const imageToDeleteRef = ref(storage, post.get("imagesUrl"));
         await deleteObject(imageToDeleteRef);
-        const postRef = doc(db, "posts", postId);
+        const postRef = doc(db, "posts", post.id);
         await deleteDoc(postRef);
         navigate("/");
       }
@@ -233,7 +233,7 @@ const PostForm = ({ post, postId, action }: PostFormProps) => {
               <FormControl>
                 <FileUploader
                   fieldChange={field.onChange}
-                  mediaUrl={post?.imagesUrl}
+                  mediaUrl={post?.get("imagesUrl")}
                 />
               </FormControl>
               <FormMessage className="shad-form_message" />

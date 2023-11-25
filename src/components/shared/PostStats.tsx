@@ -12,12 +12,14 @@ import {
 import { Loader } from ".";
 import {
   DocumentData,
+  DocumentSnapshot,
   QueryDocumentSnapshot,
   addDoc,
   deleteDoc,
   doc,
   onSnapshot,
   query,
+  serverTimestamp,
   where,
 } from "firebase/firestore";
 import { likesCollectionRef, savesCollectionRef } from "@/firebase/references";
@@ -25,7 +27,7 @@ import { useAuth } from "@/context/AuthContextf";
 import { db } from "@/firebase/firebase";
 
 type PostStatsProps = {
-  post: QueryDocumentSnapshot<DocumentData>;
+  post: QueryDocumentSnapshot<DocumentData> | DocumentSnapshot<DocumentData>;
 };
 
 const PostStats = ({ post }: PostStatsProps) => {
@@ -132,6 +134,7 @@ const PostStats = ({ post }: PostStatsProps) => {
         await addDoc(likesCollectionRef, {
           postId: post.id,
           likedUserId: user.uid,
+          createdAt: serverTimestamp(),
         });
       }
       // Unlike the post
@@ -156,6 +159,7 @@ const PostStats = ({ post }: PostStatsProps) => {
         await addDoc(savesCollectionRef, {
           postId: post.id,
           savedUserId: user.uid,
+          createdAt: serverTimestamp(),
         });
       }
       // Unsave the post

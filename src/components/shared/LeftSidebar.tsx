@@ -4,18 +4,15 @@ import { INavLink } from "@/types";
 import { sidebarLinks } from "@/constants";
 import { Loader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { useSignOutAccount } from "@/lib/react-query/queries";
-import { useUserContext, INITIAL_USER } from "@/context/AuthContext";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/context/AuthContextf";
 
 const LeftSidebar = () => {
-  const { signout: signoutF } = useAuth();
+  const { signout } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { user, setUser, setIsAuthenticated, isLoading } = useUserContext();
+  const { userData} = useAuth()
 
-  const { mutate: signOut } = useSignOutAccount();
 
   const handleSignOut = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -24,7 +21,7 @@ const LeftSidebar = () => {
     // signOut();
     // setIsAuthenticated(false);
     // setUser(INITIAL_USER);
-    signoutF();
+    signout();
     navigate("/sign-in");
   };
 
@@ -35,20 +32,20 @@ const LeftSidebar = () => {
           <h1 className="font-bold text-2xl">Cross Platform</h1>
         </Link>
 
-        {isLoading || !user.email ? (
+        { !userData.uid ? (
           <div className="h-14">
             <Loader />
           </div>
         ) : (
-          <Link to={`/profile/${user.id}`} className="flex gap-3 items-center">
+          <Link to={`/profile/${userData.uid}`} className="flex gap-3 items-center">
             <img
-              src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+              src={userData.profileImage || "/assets/icons/profile-placeholder.svg"}
               alt="profile"
               className="h-14 w-14 rounded-full"
             />
             <div className="flex flex-col">
-              <p className="body-bold">{user.name}</p>
-              <p className="small-regular text-light-3">@{user.username}</p>
+              <p className="body-bold">{userData.name}</p>
+              <p className="small-regular text-light-3">@{userData.username}</p>
             </div>
           </Link>
         )}
