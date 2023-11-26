@@ -1,7 +1,7 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, useParams } from "react-router-dom";
+import { redirect, useNavigate, useParams, RedirectFunction } from "react-router-dom";
 
 import {
   Form,
@@ -18,59 +18,93 @@ import { ProfileUploader, Loader } from "@/components/shared";
 import { ProfileValidation } from "@/lib/validation";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useUpdateUser } from "@/lib/react-query/queries";
+import { useAuth } from "@/context/AuthContextf";
+import { doc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { db, storage } from "@/firebase/firebase";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
+import { usersCollectionRef } from "@/firebase/references";
+import { useState } from "react";
+import { v4 } from "uuid";
 
 const UpdateProfile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { user, setUser } = useUserContext();
+  const { userData } = useAuth();
+  const [isUpdating, setIsUpdating] = useState(false);
   const form = useForm<z.infer<typeof ProfileValidation>>({
     resolver: zodResolver(ProfileValidation),
     defaultValues: {
       file: [],
-      name: user.name,
-      username: user.username,
-      email: user.email,
-      bio: user.bio || "",
+      name: userData.name,
+      username: userData.username,
+      email: userData.email,
+      bio: userData.bio || "",
     },
   });
 
   // Queries
-  const { data: currentUser } = useGetUserById(id || "");
-  const { mutateAsync: updateUser, isLoading: isLoadingUpdate } =
-    useUpdateUser();
+  // const { data: currentUser } = useGetUserById(id || "");
+  // const { mutateAsync: updateUser, isLoading: isLoadingUpdate } =
+  // useUpdateUser();
 
-  if (!currentUser)
-    return (
-      <div className="flex-center w-full h-full">
-        <Loader />
-      </div>
-    );
+  // if (!currentUser)
+  //   return (
+  //     <div className="flex-center w-full h-full">
+  //       <Loader />
+  //     </div>
+  //   );
 
   // Handler
   const handleUpdate = async (value: z.infer<typeof ProfileValidation>) => {
-    const updatedUser = await updateUser({
-      userId: currentUser.$id,
-      name: value.name,
-      bio: value.bio,
-      file: value.file,
-      imageUrl: currentUser.imageUrl,
-      imageId: currentUser.imageId,
-    });
-
-    if (!updatedUser) {
+    setIsUpdating(true);
+    try {
+      const isImageUpdated = value.file && value.file.length > 0;
+      let url;
+      // User try to update image
+      if (isImageUpdated) {
+        // Delete previous image
+        if (userData.profileImage) {
+          try {
+            const imageToDeleteRef = ref(storage, userData.profileImage);
+            await deleteObject(imageToDeleteRef);
+          } catch (error) {
+            if (error.code === "storage/object-not-found") {
+              // Handle the error here
+              console.log("Object not found in storage");
+            } else {
+              throw error;
+            }
+          }
+        }
+        const snapshot = await uploadBytes(
+          ref(storage, `profile_images/${v4()}`),
+          value.file[0]
+        );
+        url = await getDownloadURL(snapshot.ref);
+      }
+      const q = query(usersCollectionRef, where("uid", "==", userData.uid));
+      const snapshot = await getDocs(q);
+      const userRef = doc(usersCollectionRef, snapshot.docs[0].id);
+      await updateDoc(userRef, {
+        name: value.name,
+        bio: value.bio,
+        ...(isImageUpdated ? { profileImage: url } : {}),
+      });
+      setIsUpdating(false);
+      return navigate(`/profile/${id}`, { replace: true }); 
+    } catch (error) {
+      console.log(error);
       toast({
         title: `Update user failed. Please try again.`,
       });
+      setIsUpdating(false);
     }
-
-    setUser({
-      ...user,
-      name: updatedUser?.name,
-      bio: updatedUser?.bio,
-      imageUrl: updatedUser?.imageUrl,
-    });
-    return navigate(`/profile/${id}`);
   };
 
   return (
@@ -99,7 +133,7 @@ const UpdateProfile = () => {
                   <FormControl>
                     <ProfileUploader
                       fieldChange={field.onChange}
-                      mediaUrl={currentUser.imageUrl}
+                      mediaUrl={userData.profileImage}
                     />
                   </FormControl>
                   <FormMessage className="shad-form_message" />
@@ -186,8 +220,8 @@ const UpdateProfile = () => {
               <Button
                 type="submit"
                 className="shad-button_primary whitespace-nowrap"
-                disabled={isLoadingUpdate}>
-                {isLoadingUpdate && <Loader />}
+                disabled={isUpdating}>
+                {isUpdating && <Loader />}
                 Update Profile
               </Button>
             </div>

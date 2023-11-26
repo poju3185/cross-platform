@@ -24,7 +24,7 @@ import {
   ref,
   uploadBytes,
 } from "firebase/storage";
-import { imageStorageRef, postsCollectionRef } from "@/firebase/references";
+import { postsCollectionRef } from "@/firebase/references";
 import {
   DocumentData,
   DocumentSnapshot,
@@ -36,6 +36,7 @@ import {
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContextf";
 import { db, storage } from "@/firebase/firebase";
+import { v4 } from "uuid";
 
 type PostFormProps = {
   post?: DocumentSnapshot<DocumentData>;
@@ -138,7 +139,10 @@ const PostForm = ({ post, action }: PostFormProps) => {
           // Delete previous image
           const imageToDeleteRef = ref(storage, post.get("imagesUrl"));
           await deleteObject(imageToDeleteRef);
-          const snapshot = await uploadBytes(imageStorageRef, value.file[0]);
+          const snapshot = await uploadBytes(
+            ref(storage, `images/${v4()}`),
+            value.file[0]
+          );
           url = await getDownloadURL(snapshot.ref);
         }
         const postRef = doc(db, "posts", post.id);
@@ -162,7 +166,10 @@ const PostForm = ({ post, action }: PostFormProps) => {
     // ACTION = CREATE
     setIsLoadingCreate(true);
     try {
-      const snapshot = await uploadBytes(imageStorageRef, value.file[0]);
+      const snapshot = await uploadBytes(
+        ref(storage, `images/${v4()}`),
+        value.file[0]
+      );
       const url = await getDownloadURL(snapshot.ref);
       await addDoc(postsCollectionRef, {
         creatorId: user.uid,
