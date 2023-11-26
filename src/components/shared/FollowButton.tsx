@@ -33,7 +33,7 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
     where("followee", "==", otherUserId),
     where("follower", "==", userData.uid)
   );
-  const { data: followRecord } = useGetData(followRecordQuery);
+  const { data: followRecord , loading} = useGetData(followRecordQuery);
   if (followRecord.length > 1) {
     console.log("check likes db");
   }
@@ -104,7 +104,7 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
     setIsFollowing(false);
   };
 
-  if (followRecord) {
+  if (followRecord && !loading) {
     return (
       <Button
         onClick={(e) => handleFollow(e)}
@@ -119,8 +119,6 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
         {followRecord.length == 0 ? "Follow" : "Following"}
       </Button>
     );
-  } else {
-    return <Loader />;
   }
 };
 
