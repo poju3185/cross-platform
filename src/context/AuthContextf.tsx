@@ -119,10 +119,13 @@ export function AuthProviderf({ children }: { children: React.ReactNode }) {
     signout,
   };
 
-  //   console.log(user);
-  return (
-    <AuthContext.Provider value={value}>
-      {!loadingUser && children}
-    </AuthContext.Provider>
-  );
+  if (loadingUser) {
+    return <div className="h-screen w-screen bg-slate-700" />;
+  } else {
+    return (
+      <AuthContext.Provider value={value}>
+        {!loadingUser && children}
+      </AuthContext.Provider>
+    );
+  }
 }

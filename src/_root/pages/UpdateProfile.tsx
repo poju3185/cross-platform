@@ -1,7 +1,12 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { redirect, useNavigate, useParams, RedirectFunction } from "react-router-dom";
+import {
+  redirect,
+  useNavigate,
+  useParams,
+  RedirectFunction,
+} from "react-router-dom";
 
 import {
   Form,
@@ -30,6 +35,11 @@ import {
 import { usersCollectionRef } from "@/firebase/references";
 import { useState } from "react";
 import { v4 } from "uuid";
+
+interface FirebaseStorageError {
+  code: string;
+  // Add other properties if needed
+}
 
 const UpdateProfile = () => {
   const { toast } = useToast();
@@ -74,9 +84,18 @@ const UpdateProfile = () => {
             const imageToDeleteRef = ref(storage, userData.profileImage);
             await deleteObject(imageToDeleteRef);
           } catch (error) {
-            if (error.code === "storage/object-not-found") {
-              // Handle the error here
-              console.log("Object not found in storage");
+            if (
+              typeof error === "object" &&
+              error !== null &&
+              "code" in error
+            ) {
+              if (
+                error.code === "storage/object-not-found" ||
+                error.code === "storage/invalid-url"
+              ) {
+                // Handle the error here
+                console.log("Object not found in storage");
+              }
             } else {
               throw error;
             }
@@ -97,7 +116,9 @@ const UpdateProfile = () => {
         ...(isImageUpdated ? { profileImage: url } : {}),
       });
       setIsUpdating(false);
-      return navigate(`/profile/${id}`, { replace: true }); 
+      navigate(`/profile/${id}`);
+      window.location.reload();
+      return;
     } catch (error) {
       console.log(error);
       toast({
