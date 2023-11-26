@@ -553,7 +553,7 @@ export async function getUserById(userId: string) {
   try {
     const q = query(usersCollectionRef, where("uid", "==", userId));
     const querySnapshot = await getDocs(q);
-    return querySnapshot?.docs[0]?.data();
+    return querySnapshot.docs[0].data();
   } catch (error) {
     console.log(error);
   }

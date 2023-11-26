@@ -4,7 +4,7 @@ import { Models } from "appwrite";
 import { Loader, PostCard, UserCard } from "@/components/shared";
 // import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
 import { useAuth } from "@/context/AuthContextf";
-import { postsCollectionRef } from "@/firebase/references";
+import { postsCollectionRef, usersCollectionRef } from "@/firebase/references";
 import { useGetData } from "@/hooks/useGetData.ts";
 
 const Home = () => {
@@ -21,6 +21,8 @@ const Home = () => {
   //   return unsubscribe;
   // }, []);
   const { data: posts } = useGetData(postsCollectionRef);
+  const { data: creators } = useGetData(usersCollectionRef);
+
 
   // const {
   //   data: posts,
@@ -67,17 +69,17 @@ const Home = () => {
 
       <div className="home-creators">
         <h3 className="h3-bold dark:text-light-1">Top Creators</h3>
-        {/* {isUserLoading && !creators ? (
+        {!creators ? (
           <Loader />
         ) : (
           <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators?.documents.map((creator) => (
-              <li key={creator?.$id}>
+            {creators.map((creator) => (
+              <li key={creator.id}>
                 <UserCard otherUser={creator} />
               </li>
             ))}
           </ul>
-        )} */}
+        )}
       </div>
     </div>
   );

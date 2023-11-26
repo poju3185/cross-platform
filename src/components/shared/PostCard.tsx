@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { PostStats } from "@/components/shared";
+import { Loader, PostStats } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
 import {
   DocumentData,
@@ -39,6 +39,9 @@ const PostCard = ({ post }: PostCardProps) => {
     getCreator();
   }, []);
 
+  if (!creator) {
+    return <Loader/>
+  }
   return (
     <div className="post-card">
       <div className="flex-between">
