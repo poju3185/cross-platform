@@ -1,19 +1,9 @@
-import { Models } from "appwrite";
-
-import { GridPostList, Loader } from "@/components/shared";
-import { useGetCurrentUser } from "@/lib/react-query/queries";
+import { GridPostList } from "@/components/shared";
+import { useGetSavedPosts } from "@/hooks/useGetSavedPosts";
 
 const Saved = () => {
-  const { data: currentUser } = useGetCurrentUser();
+  const { savedPosts } = useGetSavedPosts();
 
-  const savePosts = currentUser?.save
-    .map((savePost: Models.Document) => ({
-      ...savePost.post,
-      creator: {
-        imageUrl: currentUser.imageUrl,
-      },
-    }))
-    .reverse();
 
   return (
     <div className="saved-container">
@@ -28,14 +18,18 @@ const Saved = () => {
         <h2 className="h3-bold md:h2-bold text-left w-full">Saved Posts</h2>
       </div>
 
-      {!currentUser ? (
-        <Loader />
+      {!savedPosts ? (
+        <div></div>
       ) : (
         <ul className="w-full flex justify-center max-w-5xl gap-9">
-          {savePosts.length === 0 ? (
+          {savedPosts.length === 0 ? (
             <p className="text-light-4">No available posts</p>
           ) : (
-            <GridPostList posts={savePosts} showStats={false} showUser={false} />
+            <GridPostList
+              posts={savedPosts}
+              showStats={false}
+              showUser={false}
+            />
           )}
         </ul>
       )}

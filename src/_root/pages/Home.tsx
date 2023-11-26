@@ -4,23 +4,23 @@ import { Models } from "appwrite";
 import { Loader, PostCard, UserCard } from "@/components/shared";
 // import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
 import { useAuth } from "@/context/AuthContextf";
-import { useEffect, useState } from "react";
 import { postsCollectionRef } from "@/firebase/references";
-import { DocumentData, QueryDocumentSnapshot, onSnapshot } from "firebase/firestore";
+import { useGetData } from "@/hooks/useGetData.ts";
 
 const Home = () => {
   // const { toast } = useToast();
   // const { userData } = useAuth();
   // console.log(userData)
-  const [posts, setPosts] = useState<QueryDocumentSnapshot<DocumentData>[]>();
-  useEffect(() => {
-    const unsubscribe = onSnapshot(postsCollectionRef, (collection) => {
-      // const data = collection.docs.map((doc) => doc.data());
-      setPosts(collection.docs);
-    });
+  // const [posts, setPosts] = useState<QueryDocumentSnapshot<DocumentData>[]>();
+  // useEffect(() => {
+  //   const unsubscribe = onSnapshot(postsCollectionRef, (collection) => {
+  //     // const data = collection.docs.map((doc) => doc.data());
+  //     setPosts(collection.docs);
+  //   });
 
-    return unsubscribe;
-  }, []);
+  //   return unsubscribe;
+  // }, []);
+  const { data: posts } = useGetData(postsCollectionRef);
 
   // const {
   //   data: posts,
