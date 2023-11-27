@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { followsCollectionRef } from "@/firebase/references";
 import { useAuth } from "@/context/AuthContextf";
-import { useGetData } from "@/hooks/useGetData";
+import { useGetRealtimeData } from "@/hooks/useGetRealtimeData.ts";
 
 type FollowButtonProps = {
   otherUserId: string | undefined;
@@ -33,7 +33,7 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
     where("followee", "==", otherUserId),
     where("follower", "==", userData.uid)
   );
-  const { data: followRecord , loading} = useGetData(followRecordQuery);
+  const { data: followRecord , loading} = useGetRealtimeData(followRecordQuery);
   if (followRecord.length > 1) {
     console.log("check likes db");
   }

@@ -5,6 +5,8 @@ import {
   QueryDocumentSnapshot,
   documentId,
   getDocs,
+  limit,
+  orderBy,
   query,
   where,
 } from "firebase/firestore";
@@ -20,7 +22,9 @@ export const useGetSavedPosts = () => {
   const getSavedPosts = async () => {
     const postIdQuery = query(
       savesCollectionRef,
-      where("savedUserId", "==", userData.uid)
+      where("savedUserId", "==", userData.uid),
+      orderBy("createdAt"),
+      limit(20)
     );
     const data = await getDocs(postIdQuery);
     const postIds = data.docs.map((saveRecord) => saveRecord.get("postId"));

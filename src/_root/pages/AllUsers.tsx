@@ -1,11 +1,17 @@
-import { useToast } from "@/components/ui/use-toast";
 import { Loader, UserCard } from "@/components/shared";
-import { useGetUsers } from "@/lib/react-query/queries";
-import { useGetData } from "@/hooks/useGetData";
+
 import { usersCollectionRef } from "@/firebase/references";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { limit, query } from "firebase/firestore";
 
 const AllUsers = () => {
-  const { data: creators, loading } = useGetData(usersCollectionRef);
+  const {
+    data: creators,
+    ref,
+    isEndOfData: isEndOfCreators,
+    loading,
+  } = useInfiniteScroll(query(usersCollectionRef, limit(1)));
+
   return (
     <div className="common-container">
       <div className="user-container">
@@ -20,6 +26,13 @@ const AllUsers = () => {
               </li>
             ))}
           </ul>
+        )}
+        {!isEndOfCreators && creators.length != 0 ? (
+          <div ref={ref} className="mt-10">
+            <Loader />
+          </div>
+        ) : (
+          <h2></h2>
         )}
       </div>
     </div>

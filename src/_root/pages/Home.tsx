@@ -5,24 +5,33 @@ import { Loader, PostCard, UserCard } from "@/components/shared";
 // import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
 import { useAuth } from "@/context/AuthContextf";
 import { postsCollectionRef, usersCollectionRef } from "@/firebase/references";
-import { useGetData } from "@/hooks/useGetData.ts";
+import { useGetRealtimeData } from "@/hooks/useGetRealtimeData.ts";
+import { useGetData } from "@/hooks/useGetData";
+import {
+  DocumentData,
+  QueryDocumentSnapshot,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
+} from "firebase/firestore";
+import { Button, useToast } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 const Home = () => {
-  // const { toast } = useToast();
-  // const { userData } = useAuth();
-  // console.log(userData)
-  // const [posts, setPosts] = useState<QueryDocumentSnapshot<DocumentData>[]>();
-  // useEffect(() => {
-  //   const unsubscribe = onSnapshot(postsCollectionRef, (collection) => {
-  //     // const data = collection.docs.map((doc) => doc.data());
-  //     setPosts(collection.docs);
-  //   });
+  const {
+    data: posts,
+    ref,
+    isEndOfData: isEndOfPosts,
+  } = useInfiniteScroll(
+    query(postsCollectionRef, orderBy("createdAt", "desc"), limit(3))
+  );
 
-  //   return unsubscribe;
-  // }, []);
-  const { data: posts } = useGetData(postsCollectionRef);
-  const { data: creators } = useGetData(usersCollectionRef);
-
+  const { data: creators } = useGetRealtimeData(usersCollectionRef);
 
   // const {
   //   data: posts,
@@ -63,6 +72,13 @@ const Home = () => {
                 </li>
               ))}
             </ul>
+          )}
+          {!isEndOfPosts && posts.length != 0 ? (
+            <div ref={ref} className="mt-10">
+              <Loader />
+            </div>
+          ) : (
+            <h2></h2>
           )}
         </div>
       </div>

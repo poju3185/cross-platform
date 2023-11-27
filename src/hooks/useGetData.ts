@@ -1,23 +1,26 @@
-import { useState, useEffect } from "react";
 import {
-  onSnapshot,
-  QueryDocumentSnapshot,
-  DocumentData,
   CollectionReference,
+  DocumentData,
   Query,
+  QueryDocumentSnapshot,
+  getDocs,
 } from "firebase/firestore";
+import { useEffect, useState } from "react";
 
-export const useGetData = (collectionRef: CollectionReference | Query) => {
-   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
+export const useGetData = (query: CollectionReference | Query) => {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<QueryDocumentSnapshot<DocumentData>[]>();
+
+  const getData = async () => {
+    const data = await getDocs(query);
+
+    setData(data.docs);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collectionRef, (collection) => {
-      setData(collection.docs);
-      setLoading(false);
-    });
-    return unsubscribe;
+    getData();
   }, []);
 
-  return { data, loading };
+  return { loading, data };
 };
