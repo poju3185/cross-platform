@@ -1,12 +1,8 @@
-import { Models } from "appwrite";
 import { Link } from "react-router-dom";
 
 import { PostStats } from "@/components/shared";
-import { useUserContext } from "@/context/AuthContext";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
-import { useAuth } from "@/context/AuthContextf";
-import { useEffect, useState } from "react";
-import { getUserById } from "@/lib/appwrite/api";
+
 import GridPostUserInfo from "./GridPostUserInfo";
 
 type GridPostListProps = {
@@ -20,7 +16,6 @@ const GridPostList = ({
   showUser = true,
   showStats = true,
 }: GridPostListProps) => {
-
   return (
     <ul className="grid-container">
       {posts.map((post) => (
@@ -44,9 +39,5 @@ const GridPostList = ({
     </ul>
   );
 };
-
-
-
-
 
 export default GridPostList;

@@ -16,23 +16,17 @@ import { Button } from "@/components/ui/button";
 import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 
-import {
-  useCreateUserAccount,
-  useSignInAccount,
-} from "@/lib/react-query/queries";
 import { SignupValidation } from "@/lib/validation";
-import { useUserContext } from "@/context/AuthContext";
 import { useAuth } from "@/context/AuthContextf";
 import { useState } from "react";
-import { Timestamp, addDoc, serverTimestamp } from "firebase/firestore";
+import { addDoc, serverTimestamp } from "firebase/firestore";
 import { usersCollectionRef } from "@/firebase/references";
 
 const SignupForm = () => {
-  const { user: currentUser, signup } = useAuth();
+  const { signup } = useAuth();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
@@ -44,53 +38,6 @@ const SignupForm = () => {
     },
   });
 
-  // Queries
-  const { mutateAsync: createUserAccount, isLoading: isCreatingAccount } =
-    useCreateUserAccount();
-  const { mutateAsync: signInAccount, isLoading: isSigningInUser } =
-    useSignInAccount();
-
-  // Handler
-  // const handleSignup = async (user: z.infer<typeof SignupValidation>) => {
-  //   try {
-  //     const newUser = await createUserAccount(user);
-
-  //     if (!newUser) {
-  //       toast({ title: "Sign up failed. Please try again." });
-  //       return;
-  //     } else if (typeof newUser === "object" && "message" in newUser) {
-  //       toast({ title: newUser.message + " Please try again." });
-  //       return;
-  //     }
-
-  //     const session = await signInAccount({
-  //       email: user.email,
-  //       password: user.password,
-  //     });
-
-  //     if (!session) {
-  //       toast({ title: "Something went wrong. Please login your new account" });
-
-  //       navigate("/sign-in");
-
-  //       return;
-  //     }
-
-  //     const isLoggedIn = await checkAuthUser();
-
-  //     if (isLoggedIn) {
-  //       form.reset();
-
-  //       navigate("/");
-  //     } else {
-  //       toast({ title: "Login failed. Please try again." });
-
-  //       return;
-  //     }
-  //   } catch (error) {
-  //     console.log({ error });
-  //   }
-  // };
   const handleSignup = async (user: z.infer<typeof SignupValidation>) => {
     setLoading(true);
     try {
@@ -99,14 +46,15 @@ const SignupForm = () => {
         uid: userCred.user.uid,
         username: user.username,
         name: user.name,
-        email:userCred.user.email,
+        email: userCred.user.email,
         provider: userCred.user.providerId,
         bio: "",
         profileImage: userCred.user.photoURL,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
       navigate("/");
     } catch (error) {
+      toast({ title: "Login failed. Please try again." });
       console.log({ error });
     } finally {
       setLoading(false);
@@ -185,10 +133,7 @@ const SignupForm = () => {
           />
 
           <Button type="submit" className="shad-button_primary">
-            {isCreatingAccount ||
-            isSigningInUser ||
-            isUserLoading ||
-            loading ? (
+            {loading ? (
               <div className="flex-center gap-2">
                 <Loader /> Loading...
               </div>

@@ -2,13 +2,8 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui";
 import { Loader } from "@/components/shared";
-import { GridPostList, PostStats } from "@/components/shared";
+import {PostStats } from "@/components/shared";
 
-import {
-  useGetPostById,
-  useGetUserPosts,
-  useDeletePost,
-} from "@/lib/react-query/queries";
 import { multiFormatDateString } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContextf";
 import { getPostById, getUserById } from "@/lib/appwrite/api";
@@ -40,19 +35,6 @@ const PostDetails = () => {
   useEffect(() => {
     getPost();
   }, []);
-  // const { data: userPosts, isLoading: isUserPostLoading } = useGetUserPosts(
-  //   post?.creator.$id
-  // );
-  // const { mutate: deletePost } = useDeletePost();
-
-  // const relatedPosts = userPosts?.documents.filter(
-  //   (userPost) => userPost.$id !== id
-  // );
-
-  // const handleDeletePost = () => {
-  //   deletePost({ postId: id, imageId: post?.imageId });
-  //   navigate(-1);
-  // };
 
   return (
     <div className="post_details-container">

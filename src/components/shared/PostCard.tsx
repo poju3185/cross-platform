@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Loader, PostStats } from "@/components/shared";
+import {  PostStats } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContextf";

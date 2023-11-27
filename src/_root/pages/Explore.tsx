@@ -1,43 +1,29 @@
-import { useEffect, useState } from "react";
-import { useInView } from "react-intersection-observer";
+import {  useState } from "react";
 
 import { Input } from "@/components/ui";
-import useDebounce from "@/hooks/useDebounce";
-import { GridPostList, Loader } from "@/components/shared";
-import { useGetPosts, useSearchPosts } from "@/lib/react-query/queries";
 
 export type SearchResultProps = {
   isSearchFetching: boolean;
   searchedPosts: any;
 };
 
-const SearchResults = ({
-  isSearchFetching,
-  searchedPosts,
-}: SearchResultProps) => {
-  if (isSearchFetching) {
-    return <Loader />;
-  } else if (searchedPosts && searchedPosts.documents.length > 0) {
-    return <GridPostList posts={searchedPosts.documents} />;
-  } else {
-    return (
-      <p className="text-light-4 mt-10 text-center w-full">No results found</p>
-    );
-  }
-};
+// const SearchResults = ({
+//   isSearchFetching,
+//   searchedPosts,
+// }: SearchResultProps) => {
+//   if (isSearchFetching) {
+//     return <Loader />;
+//   } else if (searchedPosts && searchedPosts.documents.length > 0) {
+//     return <GridPostList posts={searchedPosts.documents} />;
+//   } else {
+//     return (
+//       <p className="text-light-4 mt-10 text-center w-full">No results found</p>
+//     );
+//   }
+// };
 
 const Explore = () => {
   const [searchValue, setSearchValue] = useState("");
-  // const debouncedSearch = useDebounce(searchValue, 500);
-  // const { data: searchedPosts, isFetching: isSearchFetching } =
-  //   useSearchPosts(debouncedSearch);
-
-  // if (!posts)
-  //   return (
-  //     <div className="flex-center w-full h-full">
-  //       <Loader />
-  //     </div>
-  //   );
 
   return (
     <div className="explore-container">

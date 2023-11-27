@@ -7,13 +7,9 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { LikedPosts } from "@/_root/pages";
-import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById } from "@/lib/react-query/queries";
 import { GridPostList, Loader } from "@/components/shared";
-import FollowButton from "@/components/shared/FollowButton";
 import { useAuth } from "@/context/AuthContextf";
-import { getPostsByUserId, getUserById } from "@/lib/appwrite/api";
+import {  getUserById } from "@/lib/appwrite/api";
 import { useEffect, useState } from "react";
 import {
   DocumentData,
@@ -95,7 +91,6 @@ const Profile = () => {
     return unsubscribe;
   }, []);
 
-  const handleFollowingChange = () => {};
 
   if (!currentUser)
     return (

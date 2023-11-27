@@ -1,25 +1,9 @@
-import { Models } from "appwrite";
-
 // import { useToast } from "@/components/ui/use-toast";
 import { Loader, PostCard, UserCard } from "@/components/shared";
 // import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
-import { useAuth } from "@/context/AuthContextf";
 import { postsCollectionRef, usersCollectionRef } from "@/firebase/references";
 import { useGetRealtimeData } from "@/hooks/useGetRealtimeData.ts";
-import { useGetData } from "@/hooks/useGetData";
-import {
-  DocumentData,
-  QueryDocumentSnapshot,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  startAfter,
-} from "firebase/firestore";
-import { Button, useToast } from "@/components/ui";
-import { useEffect, useState } from "react";
-import { useInView } from "react-intersection-observer";
+import { limit, orderBy, query } from "firebase/firestore";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 const Home = () => {

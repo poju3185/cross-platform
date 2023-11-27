@@ -17,21 +17,16 @@ import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 
 import { SigninValidation } from "@/lib/validation";
-import { useSignInAccount } from "@/lib/react-query/queries";
-import { useUserContext } from "@/context/AuthContext";
 import { useAuth } from "@/context/AuthContextf";
 import { useState } from "react";
 
 
 const SigninForm = () => {
-  const { user,userData, signin } = useAuth();
+  const { signin } = useAuth();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
-  // Query
-  const { mutateAsync: signInAccount, isLoading } = useSignInAccount();
 
   const form = useForm<z.infer<typeof SigninValidation>>({
     resolver: zodResolver(SigninValidation),
@@ -41,27 +36,6 @@ const SigninForm = () => {
     },
   });
 
-  // const handleSignin = async (user: z.infer<typeof SigninValidation>) => {
-  //   const session = await signInAccount(user);
-
-  //   if (!session) {
-  //     toast({ title: "Login failed. Please try again." });
-
-  //     return;
-  //   }
-
-  //   const isLoggedIn = await checkAuthUser();
-
-  //   if (isLoggedIn) {
-  //     form.reset();
-
-  //     navigate("/");
-  //   } else {
-  //     toast({ title: "Login failed. Please try again." });
-
-  //     return;
-  //   }
-  // };
 
   const handleSignin = async (user: z.infer<typeof SigninValidation>) => {
     setLoading(true);
@@ -119,7 +93,7 @@ const SigninForm = () => {
           />
 
           <Button type="submit" className="shad-button_primary">
-            {isLoading || isUserLoading || loading ? (
+            {loading ? (
               <div className="flex-center gap-2">
                 <Loader /> Loading...
               </div>

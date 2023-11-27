@@ -1,12 +1,8 @@
 import { Button, useToast } from "../ui";
-import { useEffect, useState } from "react";
-import { Loader } from ".";
+import { useState } from "react";
 import {
-  DocumentData,
-  QueryDocumentSnapshot,
   addDoc,
   deleteDoc,
-  onSnapshot,
   query,
   serverTimestamp,
   where,
@@ -33,50 +29,10 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
     where("followee", "==", otherUserId),
     where("follower", "==", userData.uid)
   );
-  const { data: followRecord , loading} = useGetRealtimeData(followRecordQuery);
+  const { data: followRecord, loading } = useGetRealtimeData(followRecordQuery);
   if (followRecord.length > 1) {
     console.log("check likes db");
   }
-
-  // const { mutate: followUser, isLoading: isFollowingUser } = useFollowUser();
-  // const { mutate: unFollowUser, isLoading: isUnFollowingUser } =
-  //   useUnFollowUser();
-  // const { user } = useUserContext();
-  // const [isFollowed, setIsFollowed] = useState(false);
-  // const { data: currentUser } = useGetCurrentUser();
-  // let followedRecord = currentUser?.following.find(
-  //   (record: Models.Document) => record.followee.$id === otherUserId
-  // );
-
-  // useEffect(() => {
-  //   setIsFollowed(!!followedRecord);
-  // }, [currentUser]);
-
-  // // Pass the information of is following/unfollowing so the parent can disable some button
-  // useEffect(() => {
-  //   onFollowingChange({
-  //     isFollowing: isFollowingUser,
-  //     isUnFollowing: isUnFollowingUser,
-  //   });
-  // }, [isFollowingUser, isUnFollowingUser]);
-  // const handleFollow = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-  //   e.preventDefault();
-  //   if (otherUserId !== undefined) {
-  //     followedRecord = currentUser?.following.find(
-  //       (record: Models.Document) => record.followee.$id === otherUserId
-  //     );
-  //     if (followedRecord) {
-  //       console.log("unfollow");
-  //       setIsFollowed(false);
-  //       return unFollowUser(followedRecord.$id);
-  //     }
-  //     console.log("follow");
-  //     followUser({ followerId: user.id, followeeId: otherUserId });
-  //     setIsFollowed(true);
-  //   } else {
-  //     console.error("UserId Undefined.");
-  //   }
-  // };
 
   const handleFollow = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>

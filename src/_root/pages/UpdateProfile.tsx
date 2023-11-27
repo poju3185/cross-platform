@@ -1,12 +1,7 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  redirect,
-  useNavigate,
-  useParams,
-  RedirectFunction,
-} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
   Form,
@@ -21,11 +16,9 @@ import { Textarea, Input, Button } from "@/components/ui";
 import { ProfileUploader, Loader } from "@/components/shared";
 
 import { ProfileValidation } from "@/lib/validation";
-import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById, useUpdateUser } from "@/lib/react-query/queries";
 import { useAuth } from "@/context/AuthContextf";
 import { doc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { db, storage } from "@/firebase/firebase";
+import { storage } from "@/firebase/firebase";
 import {
   deleteObject,
   getDownloadURL,
@@ -35,11 +28,6 @@ import {
 import { usersCollectionRef } from "@/firebase/references";
 import { useState } from "react";
 import { v4 } from "uuid";
-
-interface FirebaseStorageError {
-  code: string;
-  // Add other properties if needed
-}
 
 const UpdateProfile = () => {
   const { toast } = useToast();
