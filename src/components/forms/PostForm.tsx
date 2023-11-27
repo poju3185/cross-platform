@@ -24,15 +24,22 @@ import {
   ref,
   uploadBytes,
 } from "firebase/storage";
-import { postsCollectionRef } from "@/firebase/references";
+import {
+  likesCollectionRef,
+  postsCollectionRef,
+  savesCollectionRef,
+} from "@/firebase/references";
 import {
   DocumentData,
   DocumentSnapshot,
   addDoc,
   deleteDoc,
   doc,
+  getDocs,
+  query,
   serverTimestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContextf";
 import { db, storage } from "@/firebase/firebase";
@@ -196,6 +203,21 @@ const PostForm = ({ post, action }: PostFormProps) => {
       if (post) {
         const imageToDeleteRef = ref(storage, post.get("imagesUrl"));
         await deleteObject(imageToDeleteRef);
+        // Delete likes
+        const likeRecords = await getDocs(
+          query(likesCollectionRef, where("postId", "==", post.id))
+        );
+        likeRecords.docs.forEach(async (doc) => {
+          await deleteDoc(doc.ref);
+        });
+        // Delete saves
+        const saveRecords = await getDocs(
+          query(savesCollectionRef, where("postId", "==", post.id))
+        );
+        saveRecords.docs.forEach(async (doc) => {
+          await deleteDoc(doc.ref);
+        });
+
         const postRef = doc(db, "posts", post.id);
         await deleteDoc(postRef);
         navigate("/");

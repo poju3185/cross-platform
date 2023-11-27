@@ -9,14 +9,13 @@ const AllUsers = () => {
     data: creators,
     ref,
     isEndOfData: isEndOfCreators,
-    loading,
-  } = useInfiniteScroll(query(usersCollectionRef, limit(1)));
+  } = useInfiniteScroll(query(usersCollectionRef, limit(9)));
 
   return (
     <div className="common-container">
       <div className="user-container">
         <h2 className="h3-bold md:h2-bold text-left w-full">All Users</h2>
-        {loading && !creators ? (
+        {!creators ? (
           <Loader />
         ) : (
           <ul className="user-grid">
