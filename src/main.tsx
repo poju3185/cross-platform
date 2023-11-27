@@ -1,8 +1,6 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
-import { AuthProvider } from "@/context/AuthContext";
 import { AuthProviderf } from "@/context/AuthContextf";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
 
