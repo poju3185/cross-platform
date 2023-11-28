@@ -27,7 +27,7 @@ const PostDetails = () => {
   // get post data
   const getPost = async () => {
     const postData = await getPostById(id);
-    const creatorData = await getUserById(postData?.get("creatorId"));
+    const creatorData = await getUserById(postData?.get("creatorRef").id);
     setPost(postData);
     setCreator(creatorData);
   };
@@ -66,7 +66,7 @@ const PostDetails = () => {
           <div className="post_details-info">
             <div className="flex-between w-full">
               <Link
-                to={`/profile/${post.get("creatorId")}`}
+                to={`/profile/${post.get("creatorRef").id}`}
                 className="flex items-center gap-3">
                 <img
                   src={

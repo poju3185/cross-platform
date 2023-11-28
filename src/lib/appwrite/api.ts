@@ -5,7 +5,7 @@ import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
 
 import md5 from "md5";
 import { doc, getDoc, getDocs, query, where } from "firebase/firestore";
-import { postsCollectionRef, usersCollectionRef } from "@/firebase/references";
+import { postsCollectionRef } from "@/firebase/references";
 import { db } from "@/firebase/firebase";
 
 // ============================================================
@@ -274,10 +274,7 @@ export async function getPostsByUserId(userId?: string) {
   if (!userId) throw Error;
 
   try {
-    const q = query(
-      postsCollectionRef,
-      where("creatorId", "==", userId)
-    );
+    const q = query(postsCollectionRef, where("creatorId", "==", userId));
     const querySnapshot = await getDocs(q);
     return querySnapshot?.docs;
   } catch (error) {
@@ -551,9 +548,8 @@ export async function getUsers(limit?: number) {
 // return fields in db
 export async function getUserById(userId: string) {
   try {
-    const q = query(usersCollectionRef, where("uid", "==", userId));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs[0].data();
+    const querySnapshot = await getDoc(doc(db, "users", userId));
+    return querySnapshot.data();
   } catch (error) {
     console.log(error);
   }

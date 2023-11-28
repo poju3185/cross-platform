@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 
 import FollowButton from "./FollowButton";
-import { useState } from "react";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 
 type UserCardProps = {
@@ -9,25 +8,8 @@ type UserCardProps = {
 };
 
 const UserCard = ({ otherUser }: UserCardProps) => {
-  const [isFollowingOrUnFollowing, setIsFollowingOrUnFollowing] =
-    useState(false);
-
-  // If is following/unfollowing, disable th Link
-  const handleFollowingChange = (followingState: {
-    isFollowing: boolean;
-    isUnFollowing: boolean;
-  }) => {
-    setIsFollowingOrUnFollowing(
-      followingState.isFollowing || followingState.isUnFollowing
-    );
-  };
-
   return (
-    <Link
-      to={`/profile/${otherUser.get("uid")}`}
-      className={`${
-        isFollowingOrUnFollowing && "pointer-events-none"
-      } user-card`}>
+    <Link to={`/profile/${otherUser.get("uid")}`} className={"user-card"}>
       <img
         src={
           otherUser.get("profileImage") ||
@@ -46,10 +28,7 @@ const UserCard = ({ otherUser }: UserCardProps) => {
         </p>
       </div>
 
-      <FollowButton
-        otherUserId={otherUser.get("uid")}
-        onFollowingChange={handleFollowingChange}
-      />
+      <FollowButton otherUserId={otherUser.get("uid")} />
     </Link>
   );
 };

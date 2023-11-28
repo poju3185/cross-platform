@@ -58,6 +58,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const userRef = doc(db, "users", user.uid);
   const [isLoadingCreate, setIsLoadingCreate] = useState(false);
   const [isLoadingUpdate, setIsLoadingUpdate] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
@@ -179,7 +180,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
       );
       const url = await getDownloadURL(snapshot.ref);
       await addDoc(postsCollectionRef, {
-        creatorId: user.uid,
+        creatorRef: userRef,
         caption: value.caption,
         location: value.location,
         imagesUrl: url,
@@ -205,14 +206,14 @@ const PostForm = ({ post, action }: PostFormProps) => {
         await deleteObject(imageToDeleteRef);
         // Delete likes
         const likeRecords = await getDocs(
-          query(likesCollectionRef, where("postId", "==", post.id))
+          query(likesCollectionRef, where("postRef", "==", post.ref))
         );
         likeRecords.docs.forEach(async (doc) => {
           await deleteDoc(doc.ref);
         });
         // Delete saves
         const saveRecords = await getDocs(
-          query(savesCollectionRef, where("postId", "==", post.id))
+          query(savesCollectionRef, where("postRef", "==", post.ref))
         );
         saveRecords.docs.forEach(async (doc) => {
           await deleteDoc(doc.ref);

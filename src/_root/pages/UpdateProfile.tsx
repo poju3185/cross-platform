@@ -17,15 +17,14 @@ import { ProfileUploader, Loader } from "@/components/shared";
 
 import { ProfileValidation } from "@/lib/validation";
 import { useAuth } from "@/context/AuthContextf";
-import { doc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { storage } from "@/firebase/firebase";
+import { doc, updateDoc } from "firebase/firestore";
+import { db, storage } from "@/firebase/firebase";
 import {
   deleteObject,
   getDownloadURL,
   ref,
   uploadBytes,
 } from "firebase/storage";
-import { usersCollectionRef } from "@/firebase/references";
 import { useState } from "react";
 import { v4 } from "uuid";
 
@@ -95,9 +94,7 @@ const UpdateProfile = () => {
         );
         url = await getDownloadURL(snapshot.ref);
       }
-      const q = query(usersCollectionRef, where("uid", "==", userData.uid));
-      const snapshot = await getDocs(q);
-      const userRef = doc(usersCollectionRef, snapshot.docs[0].id);
+      const userRef = doc(db, "users", userData.uid);
       await updateDoc(userRef, {
         name: value.name,
         bio: value.bio,

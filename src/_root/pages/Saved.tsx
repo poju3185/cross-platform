@@ -1,10 +1,13 @@
 import { GridPostList } from "@/components/shared";
 import { useAuth } from "@/context/AuthContextf";
-import { postsCollectionRef, savesCollectionRef } from "@/firebase/references";
+import { db } from "@/firebase/firebase";
+import { savesCollectionRef } from "@/firebase/references";
 import {
   DocumentData,
+  DocumentSnapshot,
   QueryDocumentSnapshot,
-  documentId,
+  doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -23,12 +26,12 @@ const Saved = () => {
     useState<QueryDocumentSnapshot<DocumentData, DocumentData>>();
   const [isEndOfSavedPosts, setIsEndOfSavedPosts] = useState(false);
   const [savedPosts, setSavedPosts] = useState<
-    QueryDocumentSnapshot<DocumentData>[]
+    DocumentSnapshot<unknown, DocumentData>[]
   >([]);
 
   const postIdQuery = query(
     savesCollectionRef,
-    where("savedUserId", "==", userData.uid),
+    where("savedUserRef", "==", doc(db, "users", userData.uid)),
     orderBy("createdAt", "desc"),
     limit(6)
   );
@@ -41,17 +44,18 @@ const Saved = () => {
       if (res.empty) {
         setIsEndOfSavedPosts(true);
       } else {
-        const postIds = res.docs.map((saveRecord) => saveRecord.get("postId"));
-
-        // Fectch Posts
-        const posts = await getDocs(
-          query(postsCollectionRef, where(documentId(), "in", postIds))
+        const postRefs = res.docs.map((saveRecord) =>
+          saveRecord.get("postRef")
         );
-        const sortedPosts = posts.docs.sort(
+        // Fectch Posts
+        const posts = await Promise.all(
+          postRefs.map((postRef) => getDoc(postRef))
+        );
+
+        const sortedPosts = posts.sort(
           (a, b) => b.get("createdAt") - a.get("createdAt")
         );
         setSavedPosts((prevPosts) => [...prevPosts, ...sortedPosts]);
-
         setLastPostId(res.docs[res.docs.length - 1]);
       }
     } catch (error) {

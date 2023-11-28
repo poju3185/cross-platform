@@ -7,6 +7,7 @@ import {
   QueryDocumentSnapshot,
   addDoc,
   deleteDoc,
+  doc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -14,14 +15,19 @@ import {
 } from "firebase/firestore";
 import { likesCollectionRef, savesCollectionRef } from "@/firebase/references";
 import { useAuth } from "@/context/AuthContextf";
+import { db } from "@/firebase/firebase";
 
 type PostStatsProps = {
-  post: QueryDocumentSnapshot<DocumentData> | DocumentSnapshot<DocumentData>;
+  post:
+    | QueryDocumentSnapshot<DocumentData>
+    | DocumentSnapshot<DocumentData>
+    | DocumentSnapshot<unknown, DocumentData>;
 };
 
 const PostStats = ({ post }: PostStatsProps) => {
   const location = useLocation();
   const { user } = useAuth();
+  const userRef = doc(db, "users", user.uid); 
   const [likeRecord, setLikeRecord] = useState<
     QueryDocumentSnapshot<DocumentData>[]
   >([]);
@@ -35,19 +41,19 @@ const PostStats = ({ post }: PostStatsProps) => {
   // handling likes
   const likeRecordQuery = query(
     likesCollectionRef,
-    where("postId", "==", post.id),
-    where("likedUserId", "==", user.uid)
+    where("postRef", "==", post.ref),
+    where("likedUserRef", "==", userRef)
   );
   const likedNumberQuery = query(
     likesCollectionRef,
-    where("postId", "==", post.id)
+    where("postRef", "==", post.ref)
   );
 
   // handling save
   const saveRecordQuery = query(
     savesCollectionRef,
-    where("postId", "==", post.id),
-    where("savedUserId", "==", user.uid)
+    where("postRef", "==", post.ref),
+    where("savedUserRef", "==", userRef)
   );
 
   useEffect(() => {
@@ -86,8 +92,8 @@ const PostStats = ({ post }: PostStatsProps) => {
       // Like the post
       if (likeRecord.length == 0) {
         await addDoc(likesCollectionRef, {
-          postId: post.id,
-          likedUserId: user.uid,
+          postRef: post.ref,
+          likedUserRef: userRef,
           createdAt: serverTimestamp(),
         });
       }
@@ -111,8 +117,8 @@ const PostStats = ({ post }: PostStatsProps) => {
       // save the post
       if (saveRecord.length == 0) {
         await addDoc(savesCollectionRef, {
-          postId: post.id,
-          savedUserId: user.uid,
+          postRef: post.ref,
+          savedUserRef: userRef,
           createdAt: serverTimestamp(),
         });
       }

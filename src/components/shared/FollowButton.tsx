@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   addDoc,
   deleteDoc,
+  doc,
   query,
   serverTimestamp,
   where,
@@ -10,24 +11,23 @@ import {
 import { followsCollectionRef } from "@/firebase/references";
 import { useAuth } from "@/context/AuthContextf";
 import { useGetRealtimeData } from "@/hooks/useGetRealtimeData.ts";
+import { db } from "@/firebase/firebase";
 
 type FollowButtonProps = {
   otherUserId: string | undefined;
-  onFollowingChange: (followingState: {
-    isFollowing: boolean;
-    isUnFollowing: boolean;
-  }) => void;
 };
 
 const FollowButton = ({ otherUserId }: FollowButtonProps) => {
   const { userData } = useAuth();
   const { toast } = useToast();
   const [isFollowing, setIsFollowing] = useState(false);
+  const otherUserRef = doc(db, "users", otherUserId || "");
+  const userRef = doc(db, "users", userData.uid);
 
   const followRecordQuery = query(
     followsCollectionRef,
-    where("followee", "==", otherUserId),
-    where("follower", "==", userData.uid)
+    where("followeeRef", "==", otherUserRef),
+    where("followerRef", "==", userRef)
   );
   const { data: followRecord, loading } = useGetRealtimeData(followRecordQuery);
   if (followRecord.length > 1) {
@@ -43,8 +43,8 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
       // Follow the user
       if (followRecord?.length == 0) {
         await addDoc(followsCollectionRef, {
-          followee: otherUserId,
-          follower: userData.uid,
+          followeeRef: otherUserRef,
+          followerRef: userRef,
           createdAt: serverTimestamp(),
         });
       }

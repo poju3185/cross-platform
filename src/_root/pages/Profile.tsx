@@ -9,11 +9,12 @@ import {
 
 import { GridPostList, Loader } from "@/components/shared";
 import { useAuth } from "@/context/AuthContextf";
-import {  getUserById } from "@/lib/appwrite/api";
+import { getUserById } from "@/lib/appwrite/api";
 import { useEffect, useState } from "react";
 import {
   DocumentData,
   QueryDocumentSnapshot,
+  doc,
   onSnapshot,
   query,
   where,
@@ -22,6 +23,7 @@ import {
   followsCollectionRef,
   postsCollectionRef,
 } from "@/firebase/references";
+import { db } from "@/firebase/firebase";
 
 interface StabBlockProps {
   value: string | number;
@@ -40,38 +42,42 @@ const Profile = () => {
   const { user, userData } = useAuth();
   const { pathname } = useLocation();
 
-  const [currentUser, setCurrentUser] = useState<DocumentData | undefined>();
+  const [creator, setCreator] = useState<DocumentData | undefined>();
+  const creatorRef = doc(db, "users", id || "");
   const [followingNumber, setFollowingNumber] = useState(0);
   const [followerNumber, setFollowerNumber] = useState(0);
   const [posts, setPosts] = useState<
     QueryDocumentSnapshot<DocumentData>[] | undefined
   >();
 
-  const getUser = async () => {
+  const getCreator = async () => {
     const data = await getUserById(id || "");
-    setCurrentUser(data);
+    setCreator(data);
   };
   useEffect(() => {
     // Login user's profile
     if (id === user.uid) {
-      setCurrentUser(userData);
+      setCreator(userData);
     }
     // Other user's profile
     else {
-      getUser();
+      getCreator();
     }
   }, []);
 
   // Get following stats
   const followingNumberQuery = query(
     followsCollectionRef,
-    where("follower", "==", id)
+    where("followerRef", "==", creatorRef)
   );
   const followerNumberQuery = query(
     followsCollectionRef,
-    where("followee", "==", id)
+    where("followeeRef", "==", creatorRef)
   );
-  const postsQuery = query(postsCollectionRef, where("creatorId", "==", id));
+  const postsQuery = query(
+    postsCollectionRef,
+    where("creatorRef", "==", creatorRef)
+  );
   useEffect(() => {
     const unsubscribe = onSnapshot(followingNumberQuery, (querySnapshot) => {
       setFollowingNumber(querySnapshot.docs.length);
@@ -91,8 +97,7 @@ const Profile = () => {
     return unsubscribe;
   }, []);
 
-
-  if (!currentUser)
+  if (!creator)
     return (
       <div className="flex-center w-full h-full">
         <Loader />
@@ -105,8 +110,7 @@ const Profile = () => {
         <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
           <img
             src={
-              currentUser.profileImage ||
-              "/assets/icons/profile-placeholder.svg"
+              creator.profileImage || "/assets/icons/profile-placeholder.svg"
             }
             alt="profile"
             className="w-28 h-28 lg:h-36 lg:w-36 rounded-full"
@@ -114,10 +118,10 @@ const Profile = () => {
           <div className="flex flex-col flex-1 justify-between md:mt-2">
             <div className="flex flex-col w-full">
               <h1 className="text-center xl:text-left h3-bold md:h1-semibold w-full">
-                {currentUser.name}
+                {creator.name}
               </h1>
               <p className="small-regular md:body-medium text-light-3 text-center xl:text-left">
-                @{currentUser.username}
+                @{creator.username}
               </p>
             </div>
 
@@ -128,16 +132,16 @@ const Profile = () => {
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">
-              {currentUser.bio}
+              {creator.bio}
             </p>
           </div>
 
           <div className="flex justify-center gap-4">
-            <div className={`${user.uid !== currentUser.uid && "hidden"}`}>
+            <div className={`${user.uid !== creator.uid && "hidden"}`}>
               <Link
-                to={`/update-profile/${currentUser.uid}`}
+                to={`/update-profile/${creator.uid}`}
                 className={`h-12 bg-slate-200 dark:bg-dark-4 px-5 dark:text-light-1 flex-center gap-2 rounded-lg ${
-                  user.uid !== currentUser.uid && "hidden"
+                  user.uid !== creator.uid && "hidden"
                 }`}>
                 <img
                   src={"/assets/icons/edit.svg"}
@@ -160,7 +164,7 @@ const Profile = () => {
         </div>
       </div>
 
-      {currentUser.uid === user.uid && (
+      {creator.uid === user.uid && (
         <div className="flex max-w-5xl w-full">
           <Link
             to={`/profile/${id}`}

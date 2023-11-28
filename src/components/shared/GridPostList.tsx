@@ -1,12 +1,18 @@
 import { Link } from "react-router-dom";
 
 import { PostStats } from "@/components/shared";
-import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
+import {
+  DocumentData,
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
 
 import GridPostUserInfo from "./GridPostUserInfo";
 
 type GridPostListProps = {
-  posts: QueryDocumentSnapshot<DocumentData>[];
+  posts:
+    | QueryDocumentSnapshot<DocumentData>[]
+    | DocumentSnapshot<unknown, DocumentData>[];
   showUser?: boolean;
   showStats?: boolean;
 };
@@ -29,7 +35,7 @@ const GridPostList = ({
           </Link>
           <div className="grid-post_user">
             <GridPostUserInfo
-              creatorId={post.get("creatorId")}
+              creatorId={post.get("creatorRef").id}
               showUser={showUser}
             />
             {showStats && <PostStats post={post} />}

@@ -17,7 +17,7 @@ const PostCard = ({ post }: PostCardProps) => {
 
   const postId = post.id;
   const caption = post.get("caption");
-  const creatorId = post.get("creatorId");
+  const creatorId = post.get("creatorRef").id;
   const imagesUrl = post.get("imagesUrl");
   const location = post.get("location");
   const tags = post.get("tags");
