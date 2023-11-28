@@ -158,7 +158,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           caption: value.caption,
           location: value.location,
           ...(isImageUpdated ? { imagesUrl: url } : {}),
-          tags: value.tags,
+          tags: value.tags.split(",").map((tag) => tag.trim()),
         });
         setIsLoadingUpdate(false);
         navigate("/");
@@ -184,7 +184,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
         caption: value.caption,
         location: value.location,
         imagesUrl: url,
-        tags: value.tags,
+        tags: value.tags.split(",").map((tag) => tag.trim()),
         createdAt: serverTimestamp(),
         likes: 0,
       });

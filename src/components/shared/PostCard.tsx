@@ -78,11 +78,11 @@ const PostCard = ({ post }: PostCardProps) => {
           <div className="small-medium lg:base-medium py-5">
             <p>{caption}</p>
             <ul className="flex gap-1 mt-2">
-              {tags.split(",").map((tag: string, index: number) => (
+              {tags.map((tag: string, index: number) => (
                 <li
-                  key={`${tag.trim()}${index}`}
+                  key={`${tag}${index}`}
                   className="text-light-3 small-regular">
-                  #{tag.trim()}
+                  #{tag}
                 </li>
               ))}
             </ul>
