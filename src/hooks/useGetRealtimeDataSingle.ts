@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
 import {
   onSnapshot,
-  QueryDocumentSnapshot,
   DocumentData,
-  CollectionReference,
-  Query,
+  DocumentReference,
+  DocumentSnapshot,
 } from "firebase/firestore";
 
-export const useGetRealtimeData = (query: CollectionReference | Query) => {
+export const useGetRealtimeDataSingle = (query: DocumentReference) => {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
+  const [data, setData] = useState<DocumentSnapshot<DocumentData>>();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(query, (collection) => {
-      setData(collection.docs);
+      setData(collection);
       setLoading(false);
     });
     return unsubscribe;

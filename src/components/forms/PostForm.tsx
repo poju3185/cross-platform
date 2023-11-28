@@ -186,6 +186,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
         imagesUrl: url,
         tags: value.tags,
         createdAt: serverTimestamp(),
+        likes: 0,
       });
       setIsLoadingCreate(false);
       navigate("/");

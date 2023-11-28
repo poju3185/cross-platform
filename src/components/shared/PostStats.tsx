@@ -3,17 +3,24 @@ import { useLocation } from "react-router-dom";
 
 import {
   DocumentData,
+  DocumentReference,
   DocumentSnapshot,
   QueryDocumentSnapshot,
   addDoc,
   deleteDoc,
   doc,
+  getDocs,
+  increment,
   onSnapshot,
   query,
   serverTimestamp,
+  updateDoc,
   where,
 } from "firebase/firestore";
-import { likesCollectionRef, savesCollectionRef } from "@/firebase/references";
+import {
+  likesCollectionRef,
+  savesCollectionRef,
+} from "@/firebase/references";
 import { useAuth } from "@/context/AuthContext.tsx";
 import { db } from "@/firebase/firebase";
 
@@ -27,27 +34,24 @@ type PostStatsProps = {
 const PostStats = ({ post }: PostStatsProps) => {
   const location = useLocation();
   const { user } = useAuth();
-  const userRef = doc(db, "users", user.uid); 
-  const [likeRecord, setLikeRecord] = useState<
-    QueryDocumentSnapshot<DocumentData>[]
-  >([]);
+  const userRef = doc(db, "users", user.uid);
+  const [likeRecord, setLikeRecord] = useState<DocumentReference[]>([]);
   const [likedNumber, setLikedNumber] = useState<number>(0);
   const [isLikingPost, setIsLikingPost] = useState(false);
-  const [saveRecord, setSaveRecord] = useState<
-    QueryDocumentSnapshot<DocumentData>[]
-  >([]);
+
+  const [saveRecord, setSaveRecord] = useState<QueryDocumentSnapshot[]>([]);
   const [isSavingPost, setIsSavingPost] = useState(false);
 
-  // handling likes
-  const likeRecordQuery = query(
-    likesCollectionRef,
-    where("postRef", "==", post.ref),
-    where("likedUserRef", "==", userRef)
-  );
-  const likedNumberQuery = query(
-    likesCollectionRef,
-    where("postRef", "==", post.ref)
-  );
+  // // handling likes
+  // const likeRecordQuery = query(
+  //   likesCollectionRef,
+  //   where("postRef", "==", post.ref),
+  //   where("likedUserRef", "==", userRef)
+  // );
+  // // const likedNumberQuery = query(
+  // //   likesCollectionRef,
+  // //   where("postRef", "==", post.ref)
+  // // );
 
   // handling save
   const saveRecordQuery = query(
@@ -56,22 +60,22 @@ const PostStats = ({ post }: PostStatsProps) => {
     where("savedUserRef", "==", userRef)
   );
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(likedNumberQuery, (querySnapshot) => {
-      setLikedNumber(querySnapshot.docs.length);
-    });
-    return unsubscribe;
-  }, []);
+  // useEffect(() => {
+  //   const unsubscribe = onSnapshot(likedNumberQuery, (querySnapshot) => {
+  //     setLikedNumber(querySnapshot.docs.length);
+  //   });
+  //   return unsubscribe;
+  // }, []);
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(likeRecordQuery, (querySnapshot) => {
-      setLikeRecord(querySnapshot.docs);
-      if (querySnapshot.docs.length > 1) {
-        console.log("check likes db");
-      }
-    });
-    return unsubscribe;
-  }, []);
+  // useEffect(() => {
+  //   const unsubscribe = onSnapshot(likeRecordQuery, (querySnapshot) => {
+  //     setLikeRecord(querySnapshot.docs);
+  //     if (querySnapshot.docs.length > 1) {
+  //       console.log("check likes db");
+  //     }
+  //   });
+  //   return unsubscribe;
+  // }, []);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(saveRecordQuery, (querySnapshot) => {
@@ -82,7 +86,28 @@ const PostStats = ({ post }: PostStatsProps) => {
     });
     return unsubscribe;
   }, []);
-  
+
+  const getLikeRecord = async () => {
+    const likeRes = await getDocs(
+      query(
+        likesCollectionRef,
+        where("postRef", "==", post.ref),
+        where("likedUserRef", "==", userRef)
+      )
+    );
+    if (likeRes.docs.length > 1) {
+      console.log("check likes db");
+    }
+    if (likeRes.docs.length >= 1) {
+      setLikeRecord(likeRes.docs.map((doc) => doc.ref));
+    }
+  };
+
+  useEffect(() => {
+    getLikeRecord();
+    setLikedNumber(post.get("likes"));
+  }, []);
+
   const handleLikePost = async (
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
   ) => {
@@ -91,16 +116,28 @@ const PostStats = ({ post }: PostStatsProps) => {
     try {
       // Like the post
       if (likeRecord.length == 0) {
-        await addDoc(likesCollectionRef, {
+        setLikedNumber(likedNumber + 1);
+        setLikeRecord([userRef]); // set dummy
+        const ref = await addDoc(likesCollectionRef, {
           postRef: post.ref,
           likedUserRef: userRef,
           createdAt: serverTimestamp(),
         });
+        await updateDoc(post.ref, {
+          likes: increment(1),
+        });
+        setLikeRecord([ref]);
       }
       // Unlike the post
       else {
+        setLikedNumber(likedNumber - 1);
+        setLikeRecord([]);
         // In case there are multiple likes for the same user in db
-        await Promise.all(likeRecord.map((doc) => deleteDoc(doc.ref)));
+        await Promise.all(likeRecord.map((ref) => deleteDoc(ref)));
+        await updateDoc(post.ref, {
+          likes: increment(-1),
+        });
+        setLikedNumber(likedNumber - 1);
       }
     } catch (error) {
       console.log(error);
