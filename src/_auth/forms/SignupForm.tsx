@@ -19,7 +19,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { SignupValidation } from "@/lib/validation";
 import { useAuth } from "@/context/AuthContextf";
 import { useState } from "react";
-import { addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { usersCollectionRef } from "@/firebase/references";
 
 const SignupForm = () => {
@@ -42,7 +42,7 @@ const SignupForm = () => {
     setLoading(true);
     try {
       const userCred = await signup(user.email, user.password);
-      await addDoc(usersCollectionRef, {
+      await setDoc(doc(usersCollectionRef, userCred.user.uid), {
         uid: userCred.user.uid,
         username: user.username,
         name: user.name,
@@ -54,7 +54,7 @@ const SignupForm = () => {
       });
       navigate("/");
     } catch (error) {
-      toast({ title: "Login failed. Please try again." });
+      toast({ title: "Signup failed. Please try again." });
       console.log({ error });
     } finally {
       setLoading(false);
