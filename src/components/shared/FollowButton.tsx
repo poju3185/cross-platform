@@ -4,8 +4,10 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  increment,
   query,
   serverTimestamp,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { followsCollectionRef } from "@/firebase/references";
@@ -47,11 +49,23 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
           followerRef: userRef,
           createdAt: serverTimestamp(),
         });
+        await updateDoc(otherUserRef, {
+          follower:increment(1)
+        })
+        await updateDoc(userRef, {
+          following:increment(1)
+        })
       }
       // Unfollow the user
       else if (followRecord) {
         // In case there are multiple likes for the same user in db
         await Promise.all(followRecord.map((doc) => deleteDoc(doc.ref)));
+        await updateDoc(otherUserRef, {
+          follower:increment(-1)
+        })
+        await updateDoc(userRef, {
+          following:increment(-1)
+        })
       }
     } catch (error) {
       toast({ title: "Failed. Can't follow user now." });

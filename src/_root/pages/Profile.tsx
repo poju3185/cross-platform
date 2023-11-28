@@ -20,7 +20,6 @@ import {
   where,
 } from "firebase/firestore";
 import {
-  followsCollectionRef,
   postsCollectionRef,
 } from "@/firebase/references";
 import { db } from "@/firebase/firebase";
@@ -44,8 +43,6 @@ const Profile = () => {
 
   const [creator, setCreator] = useState<DocumentData | undefined>();
   const creatorRef = doc(db, "users", id || "");
-  const [followingNumber, setFollowingNumber] = useState(0);
-  const [followerNumber, setFollowerNumber] = useState(0);
   const [posts, setPosts] = useState<
     QueryDocumentSnapshot<DocumentData>[] | undefined
   >();
@@ -66,30 +63,10 @@ const Profile = () => {
   }, [id]);
 
   // Get following stats
-  const followingNumberQuery = query(
-    followsCollectionRef,
-    where("followerRef", "==", creatorRef)
-  );
-  const followerNumberQuery = query(
-    followsCollectionRef,
-    where("followeeRef", "==", creatorRef)
-  );
   const postsQuery = query(
     postsCollectionRef,
     where("creatorRef", "==", creatorRef)
   );
-  useEffect(() => {
-    const unsubscribe = onSnapshot(followingNumberQuery, (querySnapshot) => {
-      setFollowingNumber(querySnapshot.docs.length);
-    });
-    return unsubscribe;
-  }, [id]);
-  useEffect(() => {
-    const unsubscribe = onSnapshot(followerNumberQuery, (querySnapshot) => {
-      setFollowerNumber(querySnapshot.docs.length);
-    });
-    return unsubscribe;
-  }, [id]);
   useEffect(() => {
     const unsubscribe = onSnapshot(postsQuery, (querySnapshot) => {
       setPosts(querySnapshot.docs);
@@ -127,8 +104,8 @@ const Profile = () => {
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-2">
               <StatBlock value={posts?.length || 0} label="Posts" />
-              <StatBlock value={followerNumber} label="Followers" />
-              <StatBlock value={followingNumber} label="Following" />
+              <StatBlock value={creator.follower} label="Followers" />
+              <StatBlock value={creator.following} label="Following" />
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">

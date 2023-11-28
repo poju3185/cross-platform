@@ -50,6 +50,8 @@ const SignupForm = () => {
         provider: userCred.user.providerId,
         bio: "",
         profileImage: userCred.user.photoURL,
+        following: 0,
+        follower: 0,
         createdAt: serverTimestamp(),
       });
       navigate("/");
