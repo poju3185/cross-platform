@@ -63,7 +63,7 @@ const Profile = () => {
     else {
       getCreator();
     }
-  }, []);
+  }, [id]);
 
   // Get following stats
   const followingNumberQuery = query(
@@ -83,19 +83,19 @@ const Profile = () => {
       setFollowingNumber(querySnapshot.docs.length);
     });
     return unsubscribe;
-  }, []);
+  }, [id]);
   useEffect(() => {
     const unsubscribe = onSnapshot(followerNumberQuery, (querySnapshot) => {
       setFollowerNumber(querySnapshot.docs.length);
     });
     return unsubscribe;
-  }, []);
+  }, [id]);
   useEffect(() => {
     const unsubscribe = onSnapshot(postsQuery, (querySnapshot) => {
       setPosts(querySnapshot.docs);
     });
     return unsubscribe;
-  }, []);
+  }, [id]);
 
   if (!creator)
     return (
