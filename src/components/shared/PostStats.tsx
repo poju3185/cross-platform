@@ -14,7 +14,7 @@ import {
   where,
 } from "firebase/firestore";
 import { likesCollectionRef, savesCollectionRef } from "@/firebase/references";
-import { useAuth } from "@/context/AuthContextf";
+import { useAuth } from "@/context/AuthContext.tsx";
 import { db } from "@/firebase/firebase";
 
 type PostStatsProps = {

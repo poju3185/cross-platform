@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 
 import { Loader } from "@/components/shared";
 import PostForm, { Action } from "@/components/forms/PostForm";
-import { getPostById } from "@/lib/appwrite/api";
+import { getPostById } from "@/firebase/api.ts";
 import { useEffect, useState } from "react";
 import { DocumentData, DocumentSnapshot } from "firebase/firestore";
 

@@ -1,94 +1,129 @@
 import { useNavigate } from "react-router-dom";
 import { createContext, useContext, useEffect, useState } from "react";
+import { auth } from "@/firebase/firebase";
+import {
+  IdTokenResult,
+  User,
+  UserCredential,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { DocumentData } from "firebase/firestore";
+import { getUserById } from "@/firebase/api.ts";
 
-import { IUser } from "@/types";
-import { getCurrentUser } from "@/lib/appwrite/api";
-
-export const INITIAL_USER = {
-  id: "",
-  name: "",
-  username: "",
-  email: "",
-  imageUrl: "",
-  bio: "",
+const INITIAL_USER: User = {
+  emailVerified: false,
+  isAnonymous: false,
+  metadata: {
+    creationTime: "", // Replace with actual creation time
+    lastSignInTime: "", // Replace with actual last sign in time
+  },
+  providerData: [],
+  refreshToken: "",
+  tenantId: null,
+  delete: function (): Promise<void> {
+    throw new Error("Function not implemented.");
+  },
+  getIdToken: function (): Promise<string> {
+    throw new Error("Function not implemented.");
+  },
+  getIdTokenResult: function (): Promise<IdTokenResult> {
+    throw new Error("Function not implemented.");
+  },
+  reload: function (): Promise<void> {
+    throw new Error("Function not implemented.");
+  },
+  toJSON: function (): object {
+    throw new Error("Function not implemented.");
+  },
+  displayName: null,
+  email: null,
+  phoneNumber: null,
+  photoURL: null,
+  providerId: "",
+  uid: "",
 };
-
+const INITIAL_USER_DATA: DocumentData = {};
 const INITIAL_STATE = {
   user: INITIAL_USER,
-  isLoading: false,
-  isAuthenticated: false,
-  setUser: () => {},
-  setIsAuthenticated: () => {},
-  checkAuthUser: async () => false as boolean,
+  userData: INITIAL_USER_DATA,
+  signup: async () => {
+    throw new Error("signup function not implemented");
+  },
+  signin: async () => {
+    throw new Error("signin function not implemented");
+  },
+  signout: async () => {
+    throw new Error("signout function not implemented");
+  },
 };
 
 type IContextType = {
-  user: IUser;
-  isLoading: boolean;
-  setUser: React.Dispatch<React.SetStateAction<IUser>>;
-  isAuthenticated: boolean;
-  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
-  checkAuthUser: () => Promise<boolean>;
+  user: User;
+  userData: DocumentData;
+  signup: (email: string, password: string) => Promise<UserCredential>;
+  signin: (email: string, password: string) => Promise<UserCredential>;
+  signout: () => Promise<void>;
 };
 
 const AuthContext = createContext<IContextType>(INITIAL_STATE);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const useAuth = () => useContext(AuthContext);
+
+export function AuthProviderf({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
-  const [user, setUser] = useState<IUser>(INITIAL_USER);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User>(INITIAL_USER);
+  const [userData, setUserData] = useState<DocumentData>(INITIAL_USER_DATA);
 
-  const checkAuthUser = async () => {
-    setIsLoading(true);
-    try {
-      const currentAccount = await getCurrentUser();
-      if (currentAccount) {
-        setUser({
-          id: currentAccount.$id,
-          name: currentAccount.name,
-          username: currentAccount.username,
-          email: currentAccount.email,
-          imageUrl: currentAccount.imageUrl,
-          bio: currentAccount.bio,
-        });
-        setIsAuthenticated(true);
+  const [loadingUser, setLoadingUser] = useState(true);
 
-        return true;
-      }
+  const signup = async (email: string, password: string) => {
+    return await createUserWithEmailAndPassword(auth, email, password);
+  };
 
-      return false;
-    } catch (error) {
-      console.error(error);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
+  const signin = async (email: string, password: string) => {
+    return await signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signout = async () => {
+    return await signOut(auth);
   };
 
   useEffect(() => {
-    const cookieFallback = localStorage.getItem("cookieFallback");
-    if (
-      cookieFallback === "[]" ||
-      cookieFallback === null ||
-      cookieFallback === undefined
-    ) {
-      navigate("/sign-in");
-    }
-
-    checkAuthUser();
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user !== null) {
+        setUser(user);
+        const data = await getUserById(user.uid);
+        if (data === undefined) {
+          throw Error;
+        }
+        setUserData(data);
+        setLoadingUser(false);
+      } else {
+        navigate("/sign-in");
+        setLoadingUser(false);
+      }
+    });
+    return unsubscribe;
   }, []);
 
   const value = {
     user,
-    setUser,
-    isLoading,
-    isAuthenticated,
-    setIsAuthenticated,
-    checkAuthUser,
+    userData,
+    signup,
+    signin,
+    signout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  if (loadingUser) {
+    return <div className="h-screen w-screen bg-slate-700" />;
+  } else {
+    return (
+      <AuthContext.Provider value={value}>
+        {!loadingUser && children}
+      </AuthContext.Provider>
+    );
+  }
 }
-
-export const useUserContext = () => useContext(AuthContext);

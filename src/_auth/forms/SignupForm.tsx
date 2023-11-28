@@ -17,7 +17,7 @@ import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 
 import { SignupValidation } from "@/lib/validation";
-import { useAuth } from "@/context/AuthContextf";
+import { useAuth } from "@/context/AuthContext.tsx";
 import { useState } from "react";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { usersCollectionRef } from "@/firebase/references";

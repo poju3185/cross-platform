@@ -9,7 +9,7 @@ import {
   where,
 } from "firebase/firestore";
 import { followsCollectionRef } from "@/firebase/references";
-import { useAuth } from "@/context/AuthContextf";
+import { useAuth } from "@/context/AuthContext.tsx";
 import { useGetRealtimeData } from "@/hooks/useGetRealtimeData.ts";
 import { db } from "@/firebase/firebase";
 

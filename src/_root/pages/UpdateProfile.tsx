@@ -16,7 +16,7 @@ import { Textarea, Input, Button } from "@/components/ui";
 import { ProfileUploader, Loader } from "@/components/shared";
 
 import { ProfileValidation } from "@/lib/validation";
-import { useAuth } from "@/context/AuthContextf";
+import { useAuth } from "@/context/AuthContext.tsx";
 import { doc, updateDoc } from "firebase/firestore";
 import { db, storage } from "@/firebase/firebase";
 import {

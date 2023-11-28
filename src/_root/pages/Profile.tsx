@@ -8,8 +8,8 @@ import {
 } from "react-router-dom";
 
 import { GridPostList, Loader } from "@/components/shared";
-import { useAuth } from "@/context/AuthContextf";
-import { getUserById } from "@/lib/appwrite/api";
+import { useAuth } from "@/context/AuthContext.tsx";
+import { getUserById } from "@/firebase/api.ts";
 import { useEffect, useState } from "react";
 import {
   DocumentData,

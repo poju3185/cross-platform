@@ -1,4 +1,4 @@
-import { getUserById } from "@/lib/appwrite/api";
+import { getUserById } from "@/firebase/api.ts";
 import { DocumentData } from "firebase/firestore";
 import { useEffect, useState } from "react";
 

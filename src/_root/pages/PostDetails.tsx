@@ -5,8 +5,8 @@ import { Loader } from "@/components/shared";
 import {PostStats } from "@/components/shared";
 
 import { multiFormatDateString } from "@/lib/utils";
-import { useAuth } from "@/context/AuthContextf";
-import { getPostById, getUserById } from "@/lib/appwrite/api";
+import { useAuth } from "@/context/AuthContext.tsx";
+import { getPostById, getUserById } from "@/firebase/api.ts";
 import { useEffect, useState } from "react";
 import {
   DocumentData,

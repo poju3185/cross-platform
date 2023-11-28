@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import {  PostStats } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
-import { useAuth } from "@/context/AuthContextf";
+import { useAuth } from "@/context/AuthContext.tsx";
 import { useEffect, useState } from "react";
-import { getUserById } from "@/lib/appwrite/api";
+import { getUserById } from "@/firebase/api.ts";
 
 type PostCardProps = {
   post: QueryDocumentSnapshot<DocumentData>;

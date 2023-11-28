@@ -41,7 +41,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { useAuth } from "@/context/AuthContextf";
+import { useAuth } from "@/context/AuthContext.tsx";
 import { db, storage } from "@/firebase/firebase";
 import { v4 } from "uuid";
 

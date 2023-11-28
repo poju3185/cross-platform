@@ -1,5 +1,5 @@
 import { GridPostList } from "@/components/shared";
-import { useAuth } from "@/context/AuthContextf";
+import { useAuth } from "@/context/AuthContext.tsx";
 import { db } from "@/firebase/firebase";
 import { savesCollectionRef } from "@/firebase/references";
 import {

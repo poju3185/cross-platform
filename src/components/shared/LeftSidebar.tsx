@@ -5,7 +5,7 @@ import { sidebarLinks } from "@/constants";
 import { Loader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { useAuth } from "@/context/AuthContextf";
+import { useAuth } from "@/context/AuthContext.tsx";
 
 const LeftSidebar = () => {
   const { signout } = useAuth();
