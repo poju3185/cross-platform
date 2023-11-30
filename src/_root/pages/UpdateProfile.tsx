@@ -32,7 +32,7 @@ const UpdateProfile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { userData } = useAuth();
+  const { userData, fetchUserData } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
   const form = useForm<z.infer<typeof ProfileValidation>>({
     resolver: zodResolver(ProfileValidation),
@@ -100,9 +100,9 @@ const UpdateProfile = () => {
         bio: value.bio,
         ...(isImageUpdated ? { profileImage: url } : {}),
       });
+      fetchUserData()
       setIsUpdating(false);
       navigate(`/profile/${id}`);
-      window.location.reload();
       return;
     } catch (error) {
       console.log(error);

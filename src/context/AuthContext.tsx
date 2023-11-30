@@ -58,6 +58,9 @@ const INITIAL_STATE = {
   signout: async () => {
     throw new Error("signout function not implemented");
   },
+  fetchUserData: async () => {
+    throw new Error("fetchUserData function not implemented");
+  },
 };
 
 type IContextType = {
@@ -66,6 +69,7 @@ type IContextType = {
   signup: (email: string, password: string) => Promise<UserCredential>;
   signin: (email: string, password: string) => Promise<UserCredential>;
   signout: () => Promise<void>;
+  fetchUserData: () => Promise<void>;
 };
 
 const AuthContext = createContext<IContextType>(INITIAL_STATE);
@@ -89,6 +93,16 @@ export function AuthProviderf({ children }: { children: React.ReactNode }) {
 
   const signout = async () => {
     return await signOut(auth);
+  };
+
+  const fetchUserData = async () => {
+    setLoadingUser(true);
+    const data = await getUserById(user.uid);
+    if (data === undefined) {
+      throw Error;
+    }
+    setUserData(data);
+    setLoadingUser(false);
   };
 
   useEffect(() => {
@@ -115,6 +129,7 @@ export function AuthProviderf({ children }: { children: React.ReactNode }) {
     signup,
     signin,
     signout,
+    fetchUserData
   };
 
   if (loadingUser) {
