@@ -101,7 +101,7 @@ const PostStats = ({ post }: PostStatsProps) => {
     try {
       // save the post
       const ref = doc(savesCollectionRef, post.id + "_" + user.uid);
-      if (!saveRecord) {
+      if (!saveRecord?.exists()) {
         await setDoc(ref, {
           postRef: post.ref,
           savedUserRef: userRef,
