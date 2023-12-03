@@ -2,16 +2,13 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui";
 import { Loader } from "@/components/shared";
-import {PostStats } from "@/components/shared";
+import { PostStats } from "@/components/shared";
 
 import { multiFormatDateString } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext.tsx";
 import { getPostById, getUserById } from "@/firebase/api.ts";
 import { useEffect, useState } from "react";
-import {
-  DocumentData,
-  DocumentSnapshot,
-} from "firebase/firestore";
+import { DocumentData, DocumentSnapshot } from "firebase/firestore";
 
 const PostDetails = () => {
   const navigate = useNavigate();
@@ -23,7 +20,6 @@ const PostDetails = () => {
   >();
   const [creator, setCreator] = useState<DocumentData | undefined>();
 
-
   // get post data
   const getPost = async () => {
     const postData = await getPostById(id);
@@ -31,7 +27,7 @@ const PostDetails = () => {
     setPost(postData);
     setCreator(creatorData);
   };
-  
+
   useEffect(() => {
     getPost();
   }, []);
@@ -125,16 +121,13 @@ const PostDetails = () => {
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
               <p>{post.get("caption")}</p>
               <ul className="flex gap-1 mt-2">
-                {post
-                  .get("tags")
-                  .split(",")
-                  .map((tag: string, index: string) => (
-                    <li
-                      key={`${tag.trim()}${index}`}
-                      className="text-light-3 small-regular">
-                      #{tag.trim()}
-                    </li>
-                  ))}
+                {post.get("tags").map((tag: string, index: string) => (
+                  <li
+                    key={`${tag}${index}`}
+                    className="text-light-3 small-regular">
+                    #{tag}
+                  </li>
+                ))}
               </ul>
             </div>
 
