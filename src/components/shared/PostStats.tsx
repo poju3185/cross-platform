@@ -6,21 +6,16 @@ import {
   DocumentReference,
   DocumentSnapshot,
   QueryDocumentSnapshot,
-  addDoc,
   deleteDoc,
   doc,
-  getDocs,
+  getDoc,
   increment,
   onSnapshot,
-  query,
   serverTimestamp,
+  setDoc,
   updateDoc,
-  where,
 } from "firebase/firestore";
-import {
-  likesCollectionRef,
-  savesCollectionRef,
-} from "@/firebase/references";
+import { likesCollectionRef, savesCollectionRef } from "@/firebase/references";
 import { useAuth } from "@/context/AuthContext.tsx";
 import { db } from "@/firebase/firebase";
 
@@ -35,71 +30,31 @@ const PostStats = ({ post }: PostStatsProps) => {
   const location = useLocation();
   const { user } = useAuth();
   const userRef = doc(db, "users", user.uid);
-  const [likeRecord, setLikeRecord] = useState<DocumentReference[]>([]);
+  const [likeRecord, setLikeRecord] = useState<DocumentReference>();
   const [likedNumber, setLikedNumber] = useState<number>(0);
   const [isLikingPost, setIsLikingPost] = useState(false);
 
-  const [saveRecord, setSaveRecord] = useState<QueryDocumentSnapshot[]>([]);
+  const [saveRecord, setSaveRecord] = useState<DocumentReference>();
   const [isSavingPost, setIsSavingPost] = useState(false);
 
-  // // handling likes
-  // const likeRecordQuery = query(
-  //   likesCollectionRef,
-  //   where("postRef", "==", post.ref),
-  //   where("likedUserRef", "==", userRef)
-  // );
-  // // const likedNumberQuery = query(
-  // //   likesCollectionRef,
-  // //   where("postRef", "==", post.ref)
-  // // );
-
-  // handling save
-  const saveRecordQuery = query(
-    savesCollectionRef,
-    where("postRef", "==", post.ref),
-    where("savedUserRef", "==", userRef)
-  );
-
-  // useEffect(() => {
-  //   const unsubscribe = onSnapshot(likedNumberQuery, (querySnapshot) => {
-  //     setLikedNumber(querySnapshot.docs.length);
-  //   });
-  //   return unsubscribe;
-  // }, []);
-
-  // useEffect(() => {
-  //   const unsubscribe = onSnapshot(likeRecordQuery, (querySnapshot) => {
-  //     setLikeRecord(querySnapshot.docs);
-  //     if (querySnapshot.docs.length > 1) {
-  //       console.log("check likes db");
-  //     }
-  //   });
-  //   return unsubscribe;
-  // }, []);
-
+  // Handling save
   useEffect(() => {
-    const unsubscribe = onSnapshot(saveRecordQuery, (querySnapshot) => {
-      setSaveRecord(querySnapshot.docs);
-      if (querySnapshot.docs.length > 1) {
-        console.log("check saves db");
+    const docRef = doc(db, "saves", post.id + "_" + user.uid);
+    const unsubscribe = onSnapshot(docRef, (doc) => {
+      if (doc.exists()) {
+        setSaveRecord(doc.ref);
+      } else {
+        setSaveRecord(undefined);
       }
     });
     return unsubscribe;
   }, []);
 
   const getLikeRecord = async () => {
-    const likeRes = await getDocs(
-      query(
-        likesCollectionRef,
-        where("postRef", "==", post.ref),
-        where("likedUserRef", "==", userRef)
-      )
-    );
-    if (likeRes.docs.length > 1) {
-      console.log("check likes db");
-    }
-    if (likeRes.docs.length >= 1) {
-      setLikeRecord(likeRes.docs.map((doc) => doc.ref));
+    const docRef = doc(db, "likes", post.id + "_" + user.uid);
+    const likeRes = await getDoc(docRef);
+    if (likeRes.exists()) {
+      setLikeRecord(likeRes.ref);
     }
   };
 
@@ -115,10 +70,11 @@ const PostStats = ({ post }: PostStatsProps) => {
     setIsLikingPost(true);
     try {
       // Like the post
-      if (likeRecord.length == 0) {
+      if (!likeRecord) {
         setLikedNumber(likedNumber + 1);
-        setLikeRecord([userRef]); // set dummy
-        const ref = await addDoc(likesCollectionRef, {
+        setLikeRecord(userRef); // set dummy
+        const ref = doc(likesCollectionRef, post.id + "_" + user.uid);
+        await setDoc(ref, {
           postRef: post.ref,
           likedUserRef: userRef,
           createdAt: serverTimestamp(),
@@ -126,18 +82,18 @@ const PostStats = ({ post }: PostStatsProps) => {
         await updateDoc(post.ref, {
           likes: increment(1),
         });
-        setLikeRecord([ref]);
+        setLikeRecord(ref);
       }
       // Unlike the post
       else {
         setLikedNumber(likedNumber - 1);
-        setLikeRecord([]);
+        const ref = likeRecord;
+        setLikeRecord(undefined);
         // In case there are multiple likes for the same user in db
-        await Promise.all(likeRecord.map((ref) => deleteDoc(ref)));
+        deleteDoc(ref);
         await updateDoc(post.ref, {
           likes: increment(-1),
         });
-        setLikedNumber(likedNumber - 1);
       }
     } catch (error) {
       console.log(error);
@@ -152,8 +108,9 @@ const PostStats = ({ post }: PostStatsProps) => {
     setIsSavingPost(true);
     try {
       // save the post
-      if (saveRecord.length == 0) {
-        await addDoc(savesCollectionRef, {
+      const ref = doc(savesCollectionRef, post.id + "_" + user.uid);
+      if (!saveRecord) {
+        await setDoc(ref, {
           postRef: post.ref,
           savedUserRef: userRef,
           createdAt: serverTimestamp(),
@@ -161,8 +118,7 @@ const PostStats = ({ post }: PostStatsProps) => {
       }
       // Unsave the post
       else {
-        // In case there are multiple saves for the same user in db
-        await Promise.all(saveRecord.map((doc) => deleteDoc(doc.ref)));
+        await deleteDoc(ref);
       }
     } catch (error) {
       console.log(error);
@@ -180,9 +136,7 @@ const PostStats = ({ post }: PostStatsProps) => {
       <div className="flex gap-2 mr-5">
         <img
           src={`${
-            likeRecord.length > 0
-              ? "/assets/icons/liked.svg"
-              : "/assets/icons/like.svg"
+            likeRecord ? "/assets/icons/liked.svg" : "/assets/icons/like.svg"
           }`}
           alt="like"
           width={20}
@@ -199,9 +153,7 @@ const PostStats = ({ post }: PostStatsProps) => {
       <div className="flex gap-2">
         <img
           src={
-            saveRecord.length > 0
-              ? "/assets/icons/saved.svg"
-              : "/assets/icons/save.svg"
+            saveRecord ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"
           }
           alt="save"
           width={20}
