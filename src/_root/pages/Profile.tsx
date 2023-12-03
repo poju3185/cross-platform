@@ -16,6 +16,7 @@ import {
   QueryDocumentSnapshot,
   doc,
   onSnapshot,
+  orderBy,
   query,
   where,
 } from "firebase/firestore";
@@ -56,7 +57,8 @@ const Profile = () => {
   // Get following stats
   const postsQuery = query(
     postsCollectionRef,
-    where("creatorRef", "==", creatorRef)
+    where("creatorRef", "==", creatorRef),
+    orderBy("createdAt", "desc")
   );
   useEffect(() => {
     const unsubscribe = onSnapshot(postsQuery, (querySnapshot) => {
