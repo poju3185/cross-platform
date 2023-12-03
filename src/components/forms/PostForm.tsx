@@ -32,18 +32,19 @@ import {
 import {
   DocumentData,
   DocumentSnapshot,
-  addDoc,
   deleteDoc,
   doc,
   getDocs,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext.tsx";
 import { db, storage } from "@/firebase/firebase";
 import { v4 } from "uuid";
+import shortUUID from "short-uuid"
 
 type PostFormProps = {
   post?: DocumentSnapshot<DocumentData>;
@@ -69,7 +70,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
       caption: post ? post.get("caption") : "",
       file: [],
       location: post ? post.get("location") : "",
-      tags: post ? post.get("tags") : "",
+      tags: post ? post.get("tags").join(",") : "",
     },
   });
 
@@ -148,7 +149,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           const imageToDeleteRef = ref(storage, post.get("imagesUrl"));
           await deleteObject(imageToDeleteRef);
           const snapshot = await uploadBytes(
-            ref(storage, `images/${v4()}`),
+            ref(storage, `images/${post?.id}/${v4()}`),
             value.file[0]
           );
           url = await getDownloadURL(snapshot.ref);
@@ -174,12 +175,13 @@ const PostForm = ({ post, action }: PostFormProps) => {
     // ACTION = CREATE
     setIsLoadingCreate(true);
     try {
+      const postId = shortUUID.generate();
       const snapshot = await uploadBytes(
-        ref(storage, `images/${v4()}`),
+        ref(storage, `images/${postId}/${v4()}`),
         value.file[0]
       );
       const url = await getDownloadURL(snapshot.ref);
-      await addDoc(postsCollectionRef, {
+      await setDoc(doc(postsCollectionRef, postId), {
         creatorRef: userRef,
         caption: value.caption,
         location: value.location,
