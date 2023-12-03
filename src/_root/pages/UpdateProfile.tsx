@@ -26,7 +26,6 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { useState } from "react";
-import { v4 } from "uuid";
 
 const UpdateProfile = () => {
   const { toast } = useToast();
@@ -89,7 +88,7 @@ const UpdateProfile = () => {
           }
         }
         const snapshot = await uploadBytes(
-          ref(storage, `profile_images/${v4()}`),
+          ref(storage, `profile_images/${userData.uid}`),
           value.file[0]
         );
         url = await getDownloadURL(snapshot.ref);
@@ -100,7 +99,7 @@ const UpdateProfile = () => {
         bio: value.bio,
         ...(isImageUpdated ? { profileImage: url } : {}),
       });
-      fetchUserData()
+      await fetchUserData()
       setIsUpdating(false);
       navigate(`/profile/${id}`);
       return;

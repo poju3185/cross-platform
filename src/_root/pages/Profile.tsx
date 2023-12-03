@@ -19,9 +19,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import {
-  postsCollectionRef,
-} from "@/firebase/references";
+import { postsCollectionRef } from "@/firebase/references";
 import { db } from "@/firebase/firebase";
 
 interface StabBlockProps {
@@ -38,7 +36,7 @@ const StatBlock = ({ value, label }: StabBlockProps) => (
 
 const Profile = () => {
   const { id } = useParams();
-  const { user, userData } = useAuth();
+  const { user } = useAuth();
   const { pathname } = useLocation();
 
   const [creator, setCreator] = useState<DocumentData | undefined>();
@@ -52,14 +50,7 @@ const Profile = () => {
     setCreator(data);
   };
   useEffect(() => {
-    // Login user's profile
-    if (id === user.uid) {
-      setCreator(userData);
-    }
-    // Other user's profile
-    else {
-      getCreator();
-    }
+    getCreator();
   }, [id]);
 
   // Get following stats
