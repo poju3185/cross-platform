@@ -10,7 +10,6 @@ import {
   doc,
   getDoc,
   increment,
-  onSnapshot,
   serverTimestamp,
   setDoc,
   updateDoc,
@@ -18,6 +17,7 @@ import {
 import { likesCollectionRef, savesCollectionRef } from "@/firebase/references";
 import { useAuth } from "@/context/AuthContext.tsx";
 import { db } from "@/firebase/firebase";
+import { useGetRealtimeDataSingle } from "@/hooks/useGetRealtimeDataSingle";
 
 type PostStatsProps = {
   post:
@@ -34,24 +34,16 @@ const PostStats = ({ post }: PostStatsProps) => {
   const [likedNumber, setLikedNumber] = useState<number>(0);
   const [isLikingPost, setIsLikingPost] = useState(false);
 
-  const [saveRecord, setSaveRecord] = useState<DocumentReference>();
+  // const [saveRecord, setSaveRecord] = useState<DocumentReference>();
   const [isSavingPost, setIsSavingPost] = useState(false);
 
   // Handling save
-  useEffect(() => {
-    const docRef = doc(db, "saves", post.id + "_" + user.uid);
-    const unsubscribe = onSnapshot(docRef, (doc) => {
-      if (doc.exists()) {
-        setSaveRecord(doc.ref);
-      } else {
-        setSaveRecord(undefined);
-      }
-    });
-    return unsubscribe;
-  }, []);
+  const { data: saveRecord } = useGetRealtimeDataSingle(
+    doc(savesCollectionRef, post.id + "_" + user.uid)
+  );
 
   const getLikeRecord = async () => {
-    const docRef = doc(db, "likes", post.id + "_" + user.uid);
+    const docRef = doc(likesCollectionRef, post.id + "_" + user.uid);
     const likeRes = await getDoc(docRef);
     if (likeRes.exists()) {
       setLikeRecord(likeRes.ref);
@@ -153,7 +145,7 @@ const PostStats = ({ post }: PostStatsProps) => {
       <div className="flex gap-2">
         <img
           src={
-            saveRecord ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"
+            saveRecord?.exists() ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"
           }
           alt="save"
           width={20}

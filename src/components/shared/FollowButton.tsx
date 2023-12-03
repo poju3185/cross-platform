@@ -1,19 +1,17 @@
 import { Button, useToast } from "../ui";
 import { useState } from "react";
 import {
-  addDoc,
   deleteDoc,
   doc,
   increment,
-  query,
   serverTimestamp,
+  setDoc,
   updateDoc,
-  where,
 } from "firebase/firestore";
 import { followsCollectionRef } from "@/firebase/references";
 import { useAuth } from "@/context/AuthContext.tsx";
-import { useGetRealtimeData } from "@/hooks/useGetRealtimeData.ts";
 import { db } from "@/firebase/firebase";
+import { useGetRealtimeDataSingle } from "@/hooks/useGetRealtimeDataSingle";
 
 type FollowButtonProps = {
   otherUserId: string | undefined;
@@ -26,15 +24,9 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
   const otherUserRef = doc(db, "users", otherUserId || "");
   const userRef = doc(db, "users", userData.uid);
 
-  const followRecordQuery = query(
-    followsCollectionRef,
-    where("followeeRef", "==", otherUserRef),
-    where("followerRef", "==", userRef)
+  const { data: followRecord, loading } = useGetRealtimeDataSingle(
+    doc(followsCollectionRef, userData.uid + "_" + otherUserId)
   );
-  const { data: followRecord, loading } = useGetRealtimeData(followRecordQuery);
-  if (followRecord.length > 1) {
-    console.log("check likes db");
-  }
 
   const handleFollow = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -43,29 +35,32 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
     setIsFollowing(true);
     try {
       // Follow the user
-      if (followRecord?.length == 0) {
-        await addDoc(followsCollectionRef, {
-          followeeRef: otherUserRef,
-          followerRef: userRef,
-          createdAt: serverTimestamp(),
-        });
+      if (!followRecord?.exists()) {
+        await setDoc(
+          doc(followsCollectionRef, userData.uid + "_" + otherUserId),
+          {
+            followeeRef: otherUserRef,
+            followerRef: userRef,
+            createdAt: serverTimestamp(),
+          }
+        );
         await updateDoc(otherUserRef, {
-          follower:increment(1)
-        })
+          follower: increment(1),
+        });
         await updateDoc(userRef, {
-          following:increment(1)
-        })
+          following: increment(1),
+        });
       }
       // Unfollow the user
       else if (followRecord) {
         // In case there are multiple likes for the same user in db
-        await Promise.all(followRecord.map((doc) => deleteDoc(doc.ref)));
+        await deleteDoc(followRecord.ref);
         await updateDoc(otherUserRef, {
-          follower:increment(-1)
-        })
+          follower: increment(-1),
+        });
         await updateDoc(userRef, {
-          following:increment(-1)
-        })
+          following: increment(-1),
+        });
       }
     } catch (error) {
       toast({ title: "Failed. Can't follow user now." });
@@ -82,11 +77,11 @@ const FollowButton = ({ otherUserId }: FollowButtonProps) => {
         size="sm"
         disabled={isFollowing}
         className={`${
-          followRecord.length == 0
+          !followRecord.exists()
             ? "shad-button_primary"
             : "shad-button_slate_400"
         } px-5`}>
-        {followRecord.length == 0 ? "Follow" : "Following"}
+        {!followRecord.exists() ? "Follow" : "Following"}
       </Button>
     );
   }
